@@ -1,0 +1,14 @@
+﻿Build started 6-3-2015 14:38:03.
+     1>Project "C:\VrCave\Development\Applications\CellStroll\CellStroll.vcxproj" on node 2 (Build target(s)).
+     1>Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\VrCave\Development\Debug\CellStroll.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\VrCave\Development\\Libraries\glew\lib\Release\win32 /LIBPATH:C:\VrCave\Development\\Debug /LIBPATH:C:\VrCave\Development\Debug\ kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\VrCave\Development\Debug\CellStroll.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\VrCave\Development\Debug\CellStroll.lib" /MACHINE:X86 Debug\App.obj
+         Debug\main.obj
+         Debug\Shader.obj
+     1>App.obj : error LNK2019: unresolved external symbol "__declspec(dllimport) public: static class cTexture * __cdecl CaveLib::loadTexture(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class TextureLoadOptions *)" (__imp_?loadTexture@CaveLib@@SAPAVcTexture@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVTextureLoadOptions@@@Z) referenced in function "public: virtual void __thiscall App::init(void)" (?init@App@@UAEXXZ)
+     1>App.obj : error LNK2019: unresolved external symbol "__declspec(dllimport) public: unsigned int __thiscall cTexture::tid(void)" (__imp_?tid@cTexture@@QAEIXZ) referenced in function "public: void __thiscall App::DrawBrickWall(void)" (?DrawBrickWall@App@@QAEXXZ)
+     1>C:\VrCave\Development\Debug\CellStroll.exe : fatal error LNK1120: 2 unresolved externals
+     1>Done Building Project "C:\VrCave\Development\Applications\CellStroll\CellStroll.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.23
