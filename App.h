@@ -14,7 +14,6 @@ class App : public Application
 		PositionalDevice wand;
 		PositionalDevice head;
 		DigitalDevice leftButton;
-		cTexture* brickwall_texture;
 		cModel* checkers_model;
 
 	public:
@@ -23,5 +22,5 @@ class App : public Application
 		virtual void init();
 		virtual void preFrame(double, double);
 		virtual void draw(const glm::mat4 &projectionMatrix, const glm::mat4 &modelViewMatrix);
-		void DrawBrickWall();
+		void DrawWireFrame();
 };

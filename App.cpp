@@ -18,7 +18,6 @@ void App::init(void)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	brickwall_texture = CaveLib::loadTexture("data/CellStroll/textures/brickwall.jpg");
 	checkers_model = CaveLib::loadModel("data/CellStroll/models/checkers_sphere.obj", new ModelLoadOptions(1.0f));
 }
 
@@ -29,59 +28,30 @@ void App::preFrame(double, double totalTime)
 
 void App::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &modelViewMatrix)
 {
-	/* TEXTURES OFF */
-	//glDisable(GL_TEXTURE_2D);
-	//glEnable(GL_COLOR_MATERIAL);
-
 	glEnable(GL_TEXTURE_2D);
 	glTranslatef(-1.0f, 0.0f, -1.0f);
 	glScalef(5.0f, 5.0f, 5.0f);
 
 	checkers_model->draw();
-	DrawBrickWall();
+	DrawWireFrame();
 }
 
-void App::DrawBrickWall(void)
+void App::DrawWireFrame(void)
 {
-	glBindTexture(GL_TEXTURE_2D, brickwall_texture->tid());
 	glPushMatrix();
-	glBegin(GL_QUADS);
-
-	// Top 
-	glTexCoord3f(1.0f, 0.0f, 0.0f); glVertex3f(1.0f, 1.0f, -1.0f);
-	glTexCoord3f(1.0f, 1.0f, 0.0f); glVertex3f(-1.0f, 1.0f, -1.0f);
-	glTexCoord3f(0.0f, 1.0f, 1.0f); glVertex3f(-1.0f, 1.0f, 1.0f);
-	glTexCoord3f(0.0f, 0.0f, 1.0f); glVertex3f(1.0f, 1.0f, 1.0f);
-
-	// Bottom 
-	glTexCoord3f(1.0f, 0.0f, 0.0f); glVertex3f(1.0f, -1.0f, 1.0f);
-	glTexCoord3f(1.0f, 1.0f, 0.0f); glVertex3f(-1.0f, -1.0f, 1.0f);
-	glTexCoord3f(0.0f, 1.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
-	glTexCoord3f(0.0f, 0.0f, 1.0f); glVertex3f(1.0f, -1.0f, -1.0f);
-
-	// Front 
-	glTexCoord3f(1.0f, 0.0f, 0.0f); glVertex3f(1.0f, 1.0f, 1.0f);
-	glTexCoord3f(1.0f, 1.0f, 0.0f); glVertex3f(-1.0f, 1.0f, 1.0f);
-	glTexCoord3f(0.0f, 1.0f, 1.0f); glVertex3f(-1.0f, -1.0f, 1.0f);
-	glTexCoord3f(0.0f, 0.0f, 1.0f); glVertex3f(1.0f, -1.0f, 1.0f);
-
-	// Back face
-	glTexCoord3f(1.0f, 0.0f, 0.0f); glVertex3f(1.0f, -1.0f, -1.0f);
-	glTexCoord3f(1.0f, 1.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
-	glTexCoord3f(0.0f, 1.0f, 1.0f); glVertex3f(-1.0f, 1.0f, -1.0f);
-	glTexCoord3f(0.0f, 0.0f, 1.0f); glVertex3f(1.0f, 1.0f, -1.0f);
-
-	// Left face 
-	glTexCoord3f(1.0f, 0.0f, 0.0f); glVertex3f(-1.0f, 1.0f, 1.0f);
-	glTexCoord3f(1.0f, 1.0f, 0.0f); glVertex3f(-1.0f, 1.0f, -1.0f);
-	glTexCoord3f(0.0f, 1.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
-	glTexCoord3f(0.0f, 0.0f, 1.0f); glVertex3f(-1.0f, -1.0f, 1.0f);
-
-	// Right face
-	glTexCoord3f(1.0f, 0.0f, 0.0f); glVertex3f(1.0f, 1.0f, -1.0f);
-	glTexCoord3f(1.0f, 1.0f, 0.0f); glVertex3f(1.0f, 1.0f, 1.0f);
-	glTexCoord3f(0.0f, 1.0f, 1.0f); glVertex3f(1.0f, -1.0f, 1.0f);
-	glTexCoord3f(0.0f, 0.0f, 1.0f); glVertex3f(1.0f, -1.0f, -1.0f);
-	glEnd();
+	glLineWidth(1.0);
+	glColor3f(1.0, 0.0, 0.0);
+	glTranslatef(0.0f, -0.15f, 0.0f);
+	for (float i = -2.0f; i <= 2.0f; i += 0.1f)
+	{
+		glBegin(GL_LINES);
+		glVertex3f(i, 0.0f, -2.0f);
+		glVertex3f(i, 0.0f, 2.0f);
+		glEnd();
+		glBegin(GL_LINES);
+		glVertex3f(-2.0f, 0.0f, i);
+		glVertex3f(2.0f, 0.0f, i);
+		glEnd();
+	}
 	glPopMatrix();
 }
