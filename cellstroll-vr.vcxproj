@@ -38,6 +38,8 @@
     <Import Project="..\..\VrLib.props" />
     <Import Project="..\..\CaveLib.props" />
     <Import Project="..\..\Glew.props" />
+    <Import Project="..\..\CaveLibPlugin.props" />
+    <Import Project="..\..\libpng.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -45,6 +47,8 @@
     <Import Project="..\..\VrLib.props" />
     <Import Project="..\..\CaveLib.props" />
     <Import Project="..\..\Glew.props" />
+    <Import Project="..\..\CaveLibPlugin.props" />
+    <Import Project="..\..\libpng.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -84,18 +88,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="App.cpp" />
+    <ClCompile Include="CellStrollApp.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="App.h" />
-    <ClInclude Include="Shader.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram.cd" />
-    <None Include="simple.frag" />
-    <None Include="simple.vert" />
+    <ClInclude Include="CellStrollApp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
