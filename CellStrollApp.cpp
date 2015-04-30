@@ -1,5 +1,4 @@
 #pragma comment(lib,"opengl32")
-#include <Windows.h>
 #include "CellStrollApp.h"
 #define _USE_MATH_DEFINES
 
@@ -33,6 +32,10 @@ void CellStrollApp::init(void)
 
 	airShader = new ShaderProgram("data/CellStroll/shaders/airnoise.vert", "data/CellStroll/shaders/airnoise.frag");
 	airShader->link();
+
+	//LEAP
+	controller.addListener(leapListener);
+	leapListener.onInit(controller);
 }
 
 void CellStrollApp::preFrame(double, double totalTime)
@@ -42,6 +45,14 @@ void CellStrollApp::preFrame(double, double totalTime)
 	GLfloat timeFctr = GLfloat(clock_end - clock_start) / CLOCKS_PER_SEC; // calculate time(s) elapsed since last frame
 	fps = int(1 / timeFctr);
 	clock_start = clock();
+
+	//LEAP
+	lastLeapUpdate += timeFctr;
+	if (lastLeapUpdate >= 1 / LEAP_UPDATES_PER_SEC)
+	{
+		leapListener.onFrame(controller);
+		lastLeapUpdate = 0;
+	}
 }
 
 void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &modelViewMatrix)

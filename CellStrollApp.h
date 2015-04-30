@@ -1,4 +1,5 @@
 #pragma once
+#include <Windows.h>
 #include <GL\glew.h>
 #include <VrLib\Application.h>
 #include <VrLib\Device.h>
@@ -11,6 +12,8 @@
 #include <glm\ext.hpp>
 #include <iostream>
 #include <ctime>
+#include <thread>
+#include "LeapListener.h"
 
 class cTexture;
 
@@ -24,13 +27,17 @@ class CellStrollApp : public Application
 			float ambientCoefficient;
 			float attentuation;
 		};
+		LeapListener leapListener;
+		Leap::Controller controller;
 		PositionalDevice simHead, simCamera;
 		ShaderProgram *noiseShader, *airShader;
 		cTexture *normalmap_a;
 		cModel *cell_model, *cube_model;
 		Light pointLight;
 		clock_t clock_start;
+		GLfloat lastLeapUpdate = 0;
 		int fps;
+		const int LEAP_UPDATES_PER_SEC = 4;
 
 	public:
 		CellStrollApp(void);
