@@ -35,9 +35,6 @@ class CellStrollApp : public Application
 		cModel *cell_model, *cube_model;
 		Light pointLight;
 		clock_t clock_start;
-		GLfloat lastLeapUpdate = 0;
-		int fps;
-		const int LEAP_UPDATES_PER_SEC = 4;
 
 	public:
 		CellStrollApp(void);

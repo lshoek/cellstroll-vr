@@ -40,19 +40,9 @@ void CellStrollApp::init(void)
 
 void CellStrollApp::preFrame(double, double totalTime)
 {
-	// TIMER
-	clock_t clock_end = clock();
-	GLfloat timeFctr = GLfloat(clock_end - clock_start) / CLOCKS_PER_SEC; // calculate time(s) elapsed since last frame
-	fps = int(1 / timeFctr);
+	GLfloat timeFctr = GLfloat(clock() - clock_start) / CLOCKS_PER_SEC; // calculate time(s) elapsed since last frame
 	clock_start = clock();
-
-	//LEAP
-	lastLeapUpdate += timeFctr;
-	if (lastLeapUpdate >= 1 / LEAP_UPDATES_PER_SEC)
-	{
-		leapListener.onFrame(controller);
-		lastLeapUpdate = 0;
-	}
+	leapListener.setTimeDiff(timeFctr);
 }
 
 void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &modelViewMatrix)
