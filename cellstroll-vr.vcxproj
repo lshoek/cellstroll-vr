@@ -97,11 +97,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CellStrollApp.cpp" />
+    <ClCompile Include="LeapData.cpp" />
     <ClCompile Include="LeapListener.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CellStrollApp.h" />
+    <ClInclude Include="LeapData.h" />
     <ClInclude Include="LeapListener.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

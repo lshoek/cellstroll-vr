@@ -14,6 +14,7 @@
 #include <ctime>
 #include <thread>
 #include "LeapListener.h"
+#include "LeapData.h"
 
 class cTexture;
 
@@ -27,23 +28,22 @@ class CellStrollApp : public Application
 			float ambientCoefficient;
 			float attentuation;
 		};
+		LeapData leapData;
 		LeapListener leapListener;
 		Leap::Controller controller;
 		PositionalDevice simHead, simCamera;
-		ShaderProgram *noiseShader, *airShader;
+		ShaderProgram *normalShader, *noiseShader, *airShader;
 		cTexture *normalmap_a;
-		cModel *cell_model, *cube_model;
+		cModel *pointer_model, *cell_model, *cube_model;
 		Light pointLight;
 		clock_t clock_start;
-		GLfloat lastLeapUpdate = 0;
-		int fps;
-		const int LEAP_UPDATES_PER_SEC = 4;
 
 	public:
 		CellStrollApp(void);
 		~CellStrollApp(void);
 		virtual void init();
 		virtual void preFrame(double, double);
-		virtual void draw(const glm::mat4 &projectionMatrix, const glm::mat4 &modelViewMatrix);
+		virtual void draw(const glm::mat4 &, const glm::mat4 &);
 		glm::vec3 extractCameraPosition(const glm::mat4&);
+		glm::vec3 rescaledFingerPosition(glm::vec3 fingerPos);
 };
