@@ -8,5 +8,5 @@ class LeapData
 		LeapData();
 		~LeapData();
 
-		glm::vec3 fingerPosition;
+		glm::vec3 palmPosition;
 };
