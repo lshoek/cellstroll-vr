@@ -16,10 +16,17 @@ void LeapListener::onFrame(const Leap::Controller &controller)
 		return;
 	lastLeapUpdate = 0;
 
+	//PALM TRACKING
 	const Leap::Frame frame = controller.frame();
 	if (frame.hands().isEmpty())
 		return;
 
+	const Leap::Vector palmPosition = frame.hands()[0].palmPosition();
+	if (palmPosition == Leap::Vector::zero())
+		return;
+
+	/*
+	//FINGER TRACKING
 	const Leap::PointableList pointables = frame.hands()[0].pointables();
 	if (pointables.isEmpty())
 		return;
@@ -27,8 +34,8 @@ void LeapListener::onFrame(const Leap::Controller &controller)
 	Leap::Vector tipPosition = pointables[0].stabilizedTipPosition();
 	if (tipPosition == Leap::Vector::zero())
 		return;
-
-	leapDataPtr->fingerPosition = glm::vec3(tipPosition.x, tipPosition.y, tipPosition.z);
+	*/
+	leapDataPtr->palmPosition = glm::vec3(palmPosition.x, palmPosition.y, palmPosition.z);
 }
 
 void LeapListener::setLeapData(LeapData* ptr)

@@ -28,6 +28,11 @@ class CellStrollApp : public Application
 			float ambientCoefficient;
 			float attentuation;
 		};
+		struct Plane
+		{
+			glm::vec3 point;
+			glm::vec3 normal;
+		};
 		LeapData leapData;
 		LeapListener leapListener;
 		Leap::Controller controller;
@@ -36,6 +41,7 @@ class CellStrollApp : public Application
 		cTexture *normalmap_a;
 		cModel *pointer_model, *cell_model, *cube_model;
 		Light pointLight;
+		Plane clippingPlane;
 		clock_t clock_start;
 
 	public:
@@ -45,5 +51,5 @@ class CellStrollApp : public Application
 		virtual void preFrame(double, double);
 		virtual void draw(const glm::mat4 &, const glm::mat4 &);
 		glm::vec3 extractCameraPosition(const glm::mat4&);
-		glm::vec3 rescaledFingerPosition(glm::vec3 fingerPos);
+		glm::vec3 rescaledPalmPosition(glm::vec3 fingerPos);
 };
