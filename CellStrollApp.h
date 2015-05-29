@@ -37,7 +37,7 @@ class CellStrollApp : public Application
 		LeapListener leapListener;
 		Leap::Controller controller;
 		PositionalDevice simHead, simCamera;
-		ShaderProgram *normalShader, *noiseShader, *airShader;
+		ShaderProgram *simpleShader, *cellShader, *airShader;
 		cTexture *normalmap_a;
 		cModel *pointer_model, *cell_model, *cube_model;
 		Light pointLight;
