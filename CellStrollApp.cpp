@@ -25,6 +25,7 @@ void CellStrollApp::init(void)
 
 	// TEXTURES
 	normalmap_a = CaveLib::loadTexture("data/CellStroll/textures/normalmap3.png", new TextureLoadOptions(GL_FALSE));
+	cellTexture = CaveLib::loadTexture("data/CellStroll/models/CoreTexture.png", new TextureLoadOptions(GL_FALSE));
 
 	//MODELS
 	pointer_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(1.0f));
@@ -106,8 +107,9 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	// DRAW CELL
 	cellShader->use();
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, normalmap_a->tid());
+	glBindTexture(GL_TEXTURE_2D, cellTexture->tid());
 	cellShader->setUniformInt("s_texture", 0);
+	cellShader->setUniformInt("s_normals", 1);
 	cellShader->setUniformMatrix4("modelMatrix", cellMm);
 	cellShader->setUniformMatrix4("modelViewMatrix", cellMvm);
 	cellShader->setUniformMatrix4("projectionMatrix", projectionMatrix);
