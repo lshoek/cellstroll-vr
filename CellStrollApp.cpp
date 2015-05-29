@@ -32,13 +32,13 @@ void CellStrollApp::init(void)
 	cube_model = CaveLib::loadModel("data/CellStroll/models/cube.obj", new ModelLoadOptions(100.0f));
 
 	//SHADERS
-	normalShader = new ShaderProgram("data/CellStroll/shaders/normal.vert", "data/CellStroll/shaders/normal.frag");
-	normalShader->link();
+	simpleShader = new ShaderProgram("data/CellStroll/shaders/simple.vert", "data/CellStroll/shaders/simple.frag");
+	simpleShader->link();
 
-	noiseShader = new ShaderProgram("data/CellStroll/shaders/noise.vert", "data/CellStroll/shaders/noise.frag");
-	noiseShader->link();
+	cellShader = new ShaderProgram("data/CellStroll/shaders/cell.vert", "data/CellStroll/shaders/cell.frag");
+	cellShader->link();
 
-	airShader = new ShaderProgram("data/CellStroll/shaders/airnoise.vert", "data/CellStroll/shaders/airnoise.frag");
+	airShader = new ShaderProgram("data/CellStroll/shaders/air.vert", "data/CellStroll/shaders/air.frag");
 	airShader->link();
 
 	//LEAP
@@ -88,39 +88,39 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 
 	// DRAW POINTER
-	normalShader->use();
+	simpleShader->use();
 	glDisable(GL_TEXTURE_2D);
-	normalShader->setUniformMatrix4("modelViewMatrix", modelViewMatrix);
-	normalShader->setUniformVec3("light.position", pointLight.position);
-	normalShader->setUniformVec3("light.intensities", pointLight.intensities);
-	normalShader->setUniformFloat("light.attenuation", pointLight.attentuation);
-	normalShader->setUniformFloat("light.ambientCoefficient", pointLight.ambientCoefficient);
-	normalShader->setUniformFloat("time", time);
-	normalShader->setUniformVec3("color", glm::vec3(1.0f, 1.0f, 1.0f));
-	normalShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
-	normalShader->setUniformFloat("materialShininess", 5.0f);
-	normalShader->setUniformVec3("cameraPosition", extractCameraPosition(simCamera.getData()));
-	normalShader->setUniformMatrix4("modelViewProjectionMatrix", pointerMvp);
-	pointer_model->draw(normalShader);
+	simpleShader->setUniformMatrix4("modelViewMatrix", modelViewMatrix);
+	simpleShader->setUniformVec3("light.position", pointLight.position);
+	simpleShader->setUniformVec3("light.intensities", pointLight.intensities);
+	simpleShader->setUniformFloat("light.attenuation", pointLight.attentuation);
+	simpleShader->setUniformFloat("light.ambientCoefficient", pointLight.ambientCoefficient);
+	simpleShader->setUniformFloat("time", time);
+	simpleShader->setUniformVec3("color", glm::vec3(1.0f, 1.0f, 1.0f));
+	simpleShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
+	simpleShader->setUniformFloat("materialShininess", 5.0f);
+	simpleShader->setUniformVec3("cameraPosition", extractCameraPosition(simCamera.getData()));
+	simpleShader->setUniformMatrix4("modelViewProjectionMatrix", pointerMvp);
+	pointer_model->draw(simpleShader);
 
 	// DRAW CELL
-	noiseShader->use();
+	cellShader->use();
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, normalmap_a->tid());
-	noiseShader->setUniformInt("s_texture", 0);
-	noiseShader->setUniformMatrix4("modelMatrix", cellMm);
-	noiseShader->setUniformMatrix4("modelViewMatrix", cellMvm);
-	noiseShader->setUniformMatrix4("projectionMatrix", projectionMatrix);
-	noiseShader->setUniformVec4("clippingPlane", glm::vec4(cPlane, 0.0f));
-	noiseShader->setUniformVec3("light.position", pointLight.position);
-	noiseShader->setUniformVec3("light.intensities", pointLight.intensities);
-	noiseShader->setUniformFloat("light.attenuation", pointLight.attentuation);
-	noiseShader->setUniformFloat("light.ambientCoefficient", pointLight.ambientCoefficient);
-	noiseShader->setUniformFloat("time", time);
-	noiseShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
-	noiseShader->setUniformFloat("materialShininess", 5.0f);
-	noiseShader->setUniformVec3("cameraPosition", extractCameraPosition(simCamera.getData()));
-	cell_model->draw(noiseShader);
+	cellShader->setUniformInt("s_texture", 0);
+	cellShader->setUniformMatrix4("modelMatrix", cellMm);
+	cellShader->setUniformMatrix4("modelViewMatrix", cellMvm);
+	cellShader->setUniformMatrix4("projectionMatrix", projectionMatrix);
+	cellShader->setUniformVec4("clippingPlane", glm::vec4(cPlane, 0.0f));
+	cellShader->setUniformVec3("light.position", pointLight.position);
+	cellShader->setUniformVec3("light.intensities", pointLight.intensities);
+	cellShader->setUniformFloat("light.attenuation", pointLight.attentuation);
+	cellShader->setUniformFloat("light.ambientCoefficient", pointLight.ambientCoefficient);
+	cellShader->setUniformFloat("time", time);
+	cellShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
+	cellShader->setUniformFloat("materialShininess", 5.0f);
+	cellShader->setUniformVec3("cameraPosition", extractCameraPosition(simCamera.getData()));
+	cell_model->draw(cellShader);
 
 	// DRAW AIR
 	airShader->use();
