@@ -18,12 +18,35 @@ void LeapListener::onFrame(const Leap::Controller &controller)
 
 	//PALM TRACKING
 	const Leap::Frame frame = controller.frame();
+	const Leap::FingerList fingers = frame.hands()[0].fingers();
+
+	printf("The amount of hands visible is: %d\n", frame.hands().count());
+
 	if (frame.hands().isEmpty())
 		return;
 
 	const Leap::Vector palmPosition = frame.hands()[0].palmPosition();
 	if (palmPosition == Leap::Vector::zero())
 		return;
+	
+	if (!frame.hands().isEmpty())
+	{
+		printf("The amount of fingers is: %d\n", fingers.count());
+		if (fingers.count() == 0)
+		{
+			handMode = 0;
+			// De hand is een vuist
+		}
+		else if (fingers.count() > 3)
+		{
+			handMode = 1;
+			// De hand is een slice
+		}
+		else if (frame.hands()[0].grabStrength() > 1)
+		{
+			handMode = 0;
+		}
+	}
 
 	/*
 	//FINGER TRACKING
@@ -46,4 +69,9 @@ void LeapListener::setLeapData(LeapData* ptr)
 void LeapListener::setTimeDiff(GLfloat t)
 {
 	timeDiff = t;
+}
+
+int LeapListener::getHandMode()
+{
+	return handMode;
 }

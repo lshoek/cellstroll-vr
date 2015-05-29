@@ -11,6 +11,7 @@ class LeapListener : public Leap::Listener
 		LeapData* leapDataPtr;
 		GLfloat lastLeapUpdate = 0, timeDiff = 0;
 		const int LEAP_UPDATES_PER_SEC = 60;
+		int handMode = 0;
 
 	public:
 		LeapListener();
@@ -20,4 +21,5 @@ class LeapListener : public Leap::Listener
 		virtual void onFrame(const Leap::Controller &);
 		void LeapListener::setLeapData(LeapData*);
 		void LeapListener::setTimeDiff(GLfloat);
+		int LeapListener::getHandMode();
 };

@@ -76,7 +76,8 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 
 	// CLIPPING PLANE
 	//glm::vec3 cPlane = glm::cross(clippingPlane.normal, clippingPlane.point);
-	glm::vec3 cPlane = rescaledPalmPosition(leapData.palmPosition);
+	if (leapListener.getHandMode() == 1)
+		cPlane = rescaledPalmPosition(leapData.palmPosition);
 
 	// MVP
 	glm::mat4 mvp = projectionMatrix * modelViewMatrix;
