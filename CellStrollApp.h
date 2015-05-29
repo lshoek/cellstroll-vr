@@ -38,7 +38,7 @@ class CellStrollApp : public Application
 		Leap::Controller controller;
 		PositionalDevice simHead, simCamera;
 		ShaderProgram *simpleShader, *cellShader, *airShader;
-		cTexture *normalmap_a;
+		cTexture *cellTexture, *normalmap_a;
 		cModel *pointer_model, *cell_model, *cube_model;
 		Light pointLight;
 		Plane clippingPlane;
