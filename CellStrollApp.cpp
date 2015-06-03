@@ -108,7 +108,10 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	// DRAW CELL
 	cellShader->use();
 	glEnable(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, cellTexture->tid());
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, normalmap_a->tid());
 	cellShader->setUniformInt("s_texture", 0);
 	cellShader->setUniformInt("s_normals", 1);
 	cellShader->setUniformMatrix4("modelMatrix", cellMm);
@@ -143,5 +146,5 @@ glm::vec3 CellStrollApp::extractCameraPosition(const glm::mat4 &modelView)
 
 glm::vec3 CellStrollApp::rescaledPalmPosition(glm::vec3 palmPos)
 {
-	return glm::vec3((palmPos.x / 4), (palmPos.y / 8) - 20.0f, (palmPos.z / 4));
+	return glm::vec3((palmPos.x / 4), (palmPos.y / 10) - 20.0f, (palmPos.z / 4));
 }
