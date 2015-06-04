@@ -79,6 +79,8 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	//glm::vec3 cPlane = glm::cross(clippingPlane.normal, clippingPlane.point);
 	if (leapListener.getHandMode() == 1)
 		cPlane = rescaledPalmPosition(leapData.palmPosition);
+	else if (leapListener.getHandMode() == 0)
+		cellRotation = rescaledPalmPosition(leapData.palmPosition);
 
 	// MVP
 	glm::mat4 mvp = projectionMatrix * modelViewMatrix;
@@ -87,6 +89,12 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 
 	// CELL ORIENTATION
 	glm::mat4 cellMm = glm::mat4();
+	/*cellMm = glm::translate(mvp, rescaledPalmPosition(leapData.palmPosition));
+	cellMm = glm::rotate(cellMm, leapData.pitch, glm::vec3(0, 0, 0));
+	cellMm = glm::rotate(cellMm, leapData.roll, glm::vec3(0, 0, 0));
+	cellMm = glm::rotate(cellMm, leapData.yaw, glm::vec3(0, 0, 0));*/
+	//cellMm = glm::translate(glm::vec3(0.0f, -0.1f, -3.0f));
+	//glm::translate(cellMm, glm::vec3(0, -20, 40));
 	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 
 	// DRAW POINTER
@@ -102,7 +110,6 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	simpleShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
 	simpleShader->setUniformFloat("materialShininess", 5.0f);
 	simpleShader->setUniformVec3("cameraPosition", extractCameraPosition(simCamera.getData()));
-	simpleShader->setUniformMatrix4("modelViewProjectionMatrix", pointerMvp);
 	pointer_model->draw(simpleShader);
 
 	// DRAW CELL

@@ -20,7 +20,15 @@ void LeapListener::onFrame(const Leap::Controller &controller)
 	const Leap::Frame frame = controller.frame();
 	const Leap::FingerList fingers = frame.hands()[0].fingers();
 
-	printf("The amount of hands visible is: %d\n", frame.hands().count());
+	//printf("The amount of hands visible is: %d\n", frame.hands().count());
+
+	// Rotation tracking
+	const Leap::Vector normal = frame.hands()[0].palmNormal();
+	const Leap::Vector direction = frame.hands()[0].direction();
+
+	leapDataPtr->pitch = direction.pitch() * RAD_TO_DEG;
+	leapDataPtr->roll = normal.roll() * RAD_TO_DEG;
+	leapDataPtr->yaw = direction.yaw() * RAD_TO_DEG;
 
 	if (frame.hands().isEmpty())
 		return;
@@ -31,20 +39,12 @@ void LeapListener::onFrame(const Leap::Controller &controller)
 	
 	if (!frame.hands().isEmpty())
 	{
-		printf("The amount of fingers is: %d\n", fingers.count());
-		if (fingers.count() == 0)
+		//printf("The amount of fingers is: %d\n", fingers.count());
+		if (fingers.extended().count() > 3)
+			handMode = 1; // De hand is een slice
+		else
 		{
-			handMode = 0;
-			// De hand is een vuist
-		}
-		else if (fingers.count() > 3)
-		{
-			handMode = 1;
-			// De hand is een slice
-		}
-		else if (frame.hands()[0].grabStrength() > 1)
-		{
-			handMode = 0;
+			handMode = 0; // De hand is een vuist
 		}
 	}
 

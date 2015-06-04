@@ -43,7 +43,7 @@ class CellStrollApp : public Application
 		Light pointLight;
 		Plane clippingPlane;
 		clock_t clock_start;
-		glm::vec3 cPlane;
+		glm::vec3 cPlane, cellRotation;
 
 	public:
 		CellStrollApp(void);

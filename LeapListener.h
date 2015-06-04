@@ -5,6 +5,8 @@
 #include "Leap.h"
 #include "LeapData.h"
 
+static const float RAD_TO_DEG = 57.295779513f;
+
 class LeapListener : public Leap::Listener
 {
 	private:

@@ -9,4 +9,5 @@ class LeapData
 		~LeapData();
 
 		glm::vec3 palmPosition;
+		float pitch, roll, yaw;
 };
