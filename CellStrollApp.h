@@ -39,7 +39,7 @@ class CellStrollApp : public Application
 		PositionalDevice simHead, simCamera;
 		ShaderProgram *simpleShader, *cellShader, *airShader;
 		cTexture *cellTexture, *normalmap_a;
-		cModel *pointer_model, *cell_model, *cube_model;
+		cModel *hand_model, *cell_model, *cube_model;
 		Light pointLight;
 		Plane clippingPlane;
 		clock_t clock_start;

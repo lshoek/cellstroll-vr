@@ -24,11 +24,11 @@ void CellStrollApp::init(void)
 	clippingPlane.normal = glm::vec3(0.0f, -1.0f, 0.0f);
 
 	// TEXTURES
-	normalmap_a = CaveLib::loadTexture("data/CellStroll/textures/normalmap3.png", new TextureLoadOptions(GL_FALSE));
 	cellTexture = CaveLib::loadTexture("data/CellStroll/models/CoreTexture.png", new TextureLoadOptions(GL_FALSE));
+	normalmap_a = CaveLib::loadTexture("data/CellStroll/textures/normalmap3.png", new TextureLoadOptions(GL_FALSE));
 
 	//MODELS
-	pointer_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(1.0f));
+	hand_model = CaveLib::loadModel("data/CellStroll/models/hand.obj", new ModelLoadOptions(20.0f));
 	cell_model = CaveLib::loadModel("data/CellStroll/models/AnimallCell.obj", new ModelLoadOptions(10.0f));
 	cube_model = CaveLib::loadModel("data/CellStroll/models/cube.obj", new ModelLoadOptions(100.0f));
 
@@ -78,7 +78,11 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	// CLIPPING PLANE
 	//glm::vec3 cPlane = glm::cross(clippingPlane.normal, clippingPlane.point);
 	if (leapListener.getHandMode() == 1)
+	{
 		cPlane = rescaledPalmPosition(leapData.palmPosition);
+		clippingPlane.point = rescaledPalmPosition(leapData.palmPosition);
+		clippingPlane.normal = leapData.palmNormal;
+	}
 	else if (leapListener.getHandMode() == 0)
 		cellRotation = rescaledPalmPosition(leapData.palmPosition);
 
@@ -97,7 +101,7 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	//glm::translate(cellMm, glm::vec3(0, -20, 40));
 	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 
-	// DRAW POINTER
+	// DRAW HAND
 	simpleShader->use();
 	glDisable(GL_TEXTURE_2D);
 	simpleShader->setUniformMatrix4("modelViewMatrix", modelViewMatrix);
@@ -110,7 +114,7 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	simpleShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
 	simpleShader->setUniformFloat("materialShininess", 5.0f);
 	simpleShader->setUniformVec3("cameraPosition", extractCameraPosition(simCamera.getData()));
-	pointer_model->draw(simpleShader);
+	hand_model->draw(simpleShader);
 
 	// DRAW CELL
 	cellShader->use();
@@ -124,7 +128,9 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	cellShader->setUniformMatrix4("modelMatrix", cellMm);
 	cellShader->setUniformMatrix4("modelViewMatrix", cellMvm);
 	cellShader->setUniformMatrix4("projectionMatrix", projectionMatrix);
-	cellShader->setUniformVec4("clippingPlane", glm::vec4(cPlane, 0.0f));
+	cellShader->setUniformVec4("cPlane", glm::vec4(cPlane, 0.0f));
+	cellShader->setUniformVec3("clippingPlane.point", clippingPlane.point);
+	cellShader->setUniformVec3("clippingPlane.normal", clippingPlane.normal);
 	cellShader->setUniformVec3("light.position", pointLight.position);
 	cellShader->setUniformVec3("light.intensities", pointLight.intensities);
 	cellShader->setUniformFloat("light.attenuation", pointLight.attentuation);
@@ -153,5 +159,5 @@ glm::vec3 CellStrollApp::extractCameraPosition(const glm::mat4 &modelView)
 
 glm::vec3 CellStrollApp::rescaledPalmPosition(glm::vec3 palmPos)
 {
-	return glm::vec3((palmPos.x / 4), (palmPos.y / 10) - 20.0f, (palmPos.z / 4));
+	return glm::vec3((palmPos.x / 10), (palmPos.y / 10) - 20.0f, (palmPos.z / 10));
 }
