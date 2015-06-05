@@ -41,17 +41,21 @@ void LeapListener::onFrame(const Leap::Controller &controller)
 	if (palmPosition == Leap::Vector::zero())
 		return;
 
+	const bool isRight = frame.hands()[0].isRight();
+
 	if (!frame.hands().isEmpty())
 	{
-		//printf("The amount of fingers is: %d\n", fingers.count());
 		if (fingers.extended().count() > 3)
-			handMode = 1; // De hand is een slice
-		else
-			handMode = 0; // De hand is een vuist
+			handMode = HANDMODE_SLICE;
+		else if (fingers.extended().count() == 1 && !fingers.extended().fingerType(Leap::Finger::Type::TYPE_INDEX).isEmpty())
+			handMode = HANDMODE_FINGER;
+		else if (!fingers.extended().fingerType(Leap::Finger::Type::TYPE_INDEX).isEmpty())
+			handMode = HANDMODE_FIST;
 	}
 
 	leapDataPtr->palmPosition = glm::vec3(palmPosition.x, palmPosition.y, palmPosition.z);
 	leapDataPtr->palmNormal = glm::vec3(plamNormal.x, plamNormal.y, plamNormal.z);
+	leapDataPtr->isRight = isRight;
 }
 
 void LeapListener::setLeapData(LeapData* ptr)
