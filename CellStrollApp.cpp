@@ -96,12 +96,14 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 
 	// CELL ORIENTATION
 	glm::mat4 cellMm = glm::mat4();
-	//printf("De values of the hand are: %f %f %f\n", leapData.roll, leapData.pitch, leapData.yaw);
+	printf("De values of the hand are: %f %f %f\n", leapData.roll, leapData.pitch, leapData.yaw);
 	
-	/*cellMm = glm::rotate(cellMm, leapData.roll, glm::vec3(1, 0, 0));
-	cellMm = glm::rotate(cellMm, leapData.pitch, glm::vec3(0, 1, 0));
-	cellMm = glm::rotate(cellMm, leapData.yaw, glm::vec3(0, 0, 1));*/
-
+	if (leapListener.getHandMode() == 0)
+	{
+		cellMm = glm::rotate(cellMm, leapData.roll, glm::vec3(1, 0, 0));
+		cellMm = glm::rotate(cellMm, leapData.pitch, glm::vec3(0, 1, 0));
+		cellMm = glm::rotate(cellMm, leapData.yaw, glm::vec3(0, 0, 1));
+	}
 	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 
 	// DRAW HAND

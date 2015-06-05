@@ -26,9 +26,9 @@ void LeapListener::onFrame(const Leap::Controller &controller)
 	const Leap::Vector normal = frame.hands()[0].palmNormal();
 	const Leap::Vector direction = frame.hands()[0].direction();
 
-	leapDataPtr->pitch = direction.pitch() * RAD_TO_DEG;
-	leapDataPtr->roll = normal.roll() * RAD_TO_DEG;
-	leapDataPtr->yaw = direction.yaw() * RAD_TO_DEG;
+	leapDataPtr->pitch = (direction.pitch() * 180 / 3.1415926)/20;
+	leapDataPtr->roll = (normal.roll() * 180 / 3.1415926)/20;
+	leapDataPtr->yaw = (direction.yaw() * 180 / 3.1415926)/20;
 
 	if (frame.hands().isEmpty())
 		return;
