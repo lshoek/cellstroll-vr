@@ -5,6 +5,8 @@
 CellStrollApp::CellStrollApp(void){}
 CellStrollApp::~CellStrollApp(void){}
 
+float roll, pitch;
+
 void CellStrollApp::init(void)
 {
 	//CONFIGS
@@ -30,6 +32,7 @@ void CellStrollApp::init(void)
 	//MODELS
 	pointer_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(1.0f));
 	cell_model = CaveLib::loadModel("data/CellStroll/models/AnimallCell.obj", new ModelLoadOptions(10.0f));
+	printf("De vertices van de cel zijn: %f %f %f",cell_model->getVertices()[0], cell_model->getVertices()[1], cell_model->getVertices()[2]);
 	cube_model = CaveLib::loadModel("data/CellStroll/models/cube.obj", new ModelLoadOptions(100.0f));
 
 	//SHADERS
@@ -89,12 +92,12 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 
 	// CELL ORIENTATION
 	glm::mat4 cellMm = glm::mat4();
-	/*cellMm = glm::translate(mvp, rescaledPalmPosition(leapData.palmPosition));
-	cellMm = glm::rotate(cellMm, leapData.pitch, glm::vec3(0, 0, 0));
-	cellMm = glm::rotate(cellMm, leapData.roll, glm::vec3(0, 0, 0));
-	cellMm = glm::rotate(cellMm, leapData.yaw, glm::vec3(0, 0, 0));*/
-	//cellMm = glm::translate(glm::vec3(0.0f, -0.1f, -3.0f));
-	//glm::translate(cellMm, glm::vec3(0, -20, 40));
+	//printf("De values of the hand are: %f %f %f\n", leapData.roll, leapData.pitch, leapData.yaw);
+	
+	/*cellMm = glm::rotate(cellMm, leapData.roll, glm::vec3(1, 0, 0));
+	cellMm = glm::rotate(cellMm, leapData.pitch, glm::vec3(0, 1, 0));
+	cellMm = glm::rotate(cellMm, leapData.yaw, glm::vec3(0, 0, 1));*/
+
 	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 
 	// DRAW POINTER
