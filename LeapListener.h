@@ -13,12 +13,13 @@ class LeapListener : public Leap::Listener
 		LeapData* leapDataPtr;
 		GLfloat lastLeapUpdate = 0, timeDiff = 0;
 		const int LEAP_UPDATES_PER_SEC = 60;
-		int handMode = 0;
+		int handMode = HANDMODE_SLICE;
 
 	public:
 		LeapListener();
 		~LeapListener();
 
+		static enum HandMode { HANDMODE_SLICE, HANDMODE_FIST, HANDMODE_FINGER };
 		virtual void onInit(const Leap::Controller &);
 		virtual void onFrame(const Leap::Controller &);
 		void LeapListener::setLeapData(LeapData*);
