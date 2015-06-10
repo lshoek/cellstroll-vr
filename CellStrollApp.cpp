@@ -60,18 +60,6 @@ void CellStrollApp::preFrame(double, double totalTime)
 	GLfloat timeFctr = GLfloat(clock() - clock_start) / CLOCKS_PER_SEC; // calculate time(s) elapsed since last frame
 	clock_start = clock();
 	leapListener.setTimeDiff(timeFctr);
-
-	if (GetAsyncKeyState(VK_RIGHT))
-	{
-		clippingPlane.point.y += 0.25f;
-		std::cout << clippingPlane.point.y << "\n";
-	}
-
-	if (GetAsyncKeyState(VK_LEFT))
-	{
-		clippingPlane.point.y -= 0.25f;
-		std::cout << clippingPlane.point.y << "\n";
-	}
 }
 
 void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &modelViewMatrix)
@@ -81,6 +69,14 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 
 	// UPDATE TIME UNIFORM
 	GLfloat time = GLfloat(clock()) / GLfloat(CLOCKS_PER_SEC);
+
+	// MVP
+	glm::mat4 mvp = projectionMatrix * modelViewMatrix;
+	glm::mat4 airMvp = glm::translate(mvp, glm::vec3(-50.0f, -50.0f, 50.0f));
+	glm::mat4 pointerMvp = glm::translate(mvp, rescaledPalmPosition(leapData.palmPosition));
+	glm::mat4 cellMm = glm::mat4();
+	glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
+	pointerMvp *= glm::inverse(rotMat);
 
 	// CLIPPING PLANE
 	if (leapListener.getHandMode() == LeapListener::HANDMODE_SLICE)
@@ -96,25 +92,10 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_FIST)
 	{
 		cellRotation = rescaledPalmPosition(leapData.palmPosition);
-		handTexture = fistTexture;
-	}
-
-	// MVP
-	glm::mat4 mvp = projectionMatrix * modelViewMatrix;
-	glm::mat4 airMvp = glm::translate(mvp, glm::vec3(-50.0f, -50.0f, 50.0f));
-	glm::mat4 pointerMvp = glm::translate(mvp, rescaledPalmPosition(leapData.palmPosition));
-	glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
-	pointerMvp *= glm::inverse(rotMat);
-
-	// CELL ORIENTATION
-	glm::mat4 cellMm = glm::mat4();
-	printf("De values of the hand are: %f %f %f\n", leapData.roll, leapData.pitch, leapData.yaw);
-	
-	if (leapListener.getHandMode() == 0)
-	{
 		cellMm = glm::rotate(cellMm, leapData.roll, glm::vec3(1, 0, 0));
 		cellMm = glm::rotate(cellMm, leapData.pitch, glm::vec3(0, 1, 0));
 		cellMm = glm::rotate(cellMm, leapData.yaw, glm::vec3(0, 0, 1));
+		handTexture = fistTexture;
 	}
 	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 

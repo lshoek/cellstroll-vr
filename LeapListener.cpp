@@ -16,45 +16,36 @@ void LeapListener::onFrame(const Leap::Controller &controller)
 		return;
 	lastLeapUpdate = 0;
 
-	//PALM TRACKING
 	const Leap::Frame frame = controller.frame();
-	const Leap::FingerList fingers = frame.hands()[0].fingers();
-
-	//printf("The amount of hands visible is: %d\n", frame.hands().count());
-
-	// Rotation tracking
-	const Leap::Vector normal = frame.hands()[0].palmNormal();
-	const Leap::Vector direction = frame.hands()[0].direction();
-
-	leapDataPtr->pitch = (direction.pitch() * 180 / 3.1415926)/20;
-	leapDataPtr->roll = (normal.roll() * 180 / 3.1415926)/20;
-	leapDataPtr->yaw = (direction.yaw() * 180 / 3.1415926)/20;
-
 	if (frame.hands().isEmpty())
 		return;
 
+	//PALM TRACKING
 	const Leap::Vector palmPosition = frame.hands()[0].palmPosition();
 	if (palmPosition == Leap::Vector::zero())
 		return;
 
-	const Leap::Vector plamNormal = frame.hands()[0].palmNormal();
+	const Leap::Vector palmNormal = frame.hands()[0].palmNormal();
 	if (palmPosition == Leap::Vector::zero())
 		return;
 
 	const bool isRight = frame.hands()[0].isRight();
 
-	if (!frame.hands().isEmpty())
-	{
-		if (fingers.extended().count() > 3)
-			handMode = HANDMODE_SLICE;
-		else if (fingers.extended().count() == 1 && !fingers.extended().fingerType(Leap::Finger::Type::TYPE_INDEX).isEmpty())
-			handMode = HANDMODE_FINGER;
-		else if (!fingers.extended().fingerType(Leap::Finger::Type::TYPE_INDEX).isEmpty())
-			handMode = HANDMODE_FIST;
-	}
+	const Leap::Vector direction = frame.hands()[0].direction();
+	leapDataPtr->pitch = (direction.pitch() * 180 / 3.1415926)/20;
+	leapDataPtr->roll = (palmNormal.roll() * 180 / 3.1415926) / 20;
+	leapDataPtr->yaw = (direction.yaw() * 180 / 3.1415926)/20;
+
+	const Leap::FingerList fingers = frame.hands()[0].fingers();
+	if (fingers.extended().count() > 4)
+		handMode = HANDMODE_SLICE;
+	else if (fingers.extended().count() <= 2 && !fingers.extended().fingerType(Leap::Finger::Type::TYPE_INDEX).isEmpty())
+		handMode = HANDMODE_FINGER;
+	else if (fingers.extended().count() == 0)
+		handMode = HANDMODE_FIST;
 
 	leapDataPtr->palmPosition = glm::vec3(palmPosition.x, palmPosition.y, palmPosition.z);
-	leapDataPtr->palmNormal = glm::vec3(plamNormal.x, plamNormal.y, plamNormal.z);
+	leapDataPtr->palmNormal = glm::vec3(palmNormal.x, palmNormal.y, palmNormal.z);
 	leapDataPtr->isRight = isRight;
 }
 
