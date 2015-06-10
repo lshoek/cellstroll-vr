@@ -10,5 +10,5 @@ class LeapData
 
 		glm::vec3 palmPosition, palmNormal;
 		bool isRight;
-		float pitch, roll, yaw;
+		float pitch, roll, yaw, handDifference;
 };

@@ -26,7 +26,7 @@ void CellStrollApp::init(void)
 	clippingPlane.normal = glm::vec3(0.0f, -1.0f, 0.0f);
 
 	// TEXTURES
-	cellTexture = CaveLib::loadTexture("data/CellStroll/models/CoreTexture.png", new TextureLoadOptions(GL_FALSE));
+	cellTexture = CaveLib::loadTexture("data/CellStroll/models/CoreTextureNew.png", new TextureLoadOptions(GL_FALSE));
 	sliceTexture = CaveLib::loadTexture("data/CellStroll/models/hand.png", new TextureLoadOptions(GL_FALSE));
 	fingerTexture = CaveLib::loadTexture("data/CellStroll/models/finger.png", new TextureLoadOptions(GL_FALSE));
 	fistTexture = CaveLib::loadTexture("data/CellStroll/models/fist.png", new TextureLoadOptions(GL_FALSE));
@@ -35,7 +35,8 @@ void CellStrollApp::init(void)
 
 	//MODELS
 	hand_model = CaveLib::loadModel("data/CellStroll/models/hand.obj", new ModelLoadOptions(3.0f));
-	cell_model = CaveLib::loadModel("data/CellStroll/models/AnimallCell.obj", new ModelLoadOptions(10.0f));
+	cell_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(10.0f));
+	//cell_model = CaveLib::loadModel("data/CellStroll/models/AnimallCellNew.obj", new ModelLoadOptions(10.0f));
 	printf("De vertices van de cel zijn: %f %f %f",cell_model->getVertices()[0], cell_model->getVertices()[1], cell_model->getVertices()[2]);
 	cube_model = CaveLib::loadModel("data/CellStroll/models/cube.obj", new ModelLoadOptions(100.0f));
 
@@ -98,6 +99,10 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		cellRotation = rescaledPalmPosition(leapData.palmPosition);
 		handTexture = fistTexture;
 	}
+	else if (leapListener.getHandMode() == LeapListener::HANDMODE_ZOOM)
+	{
+
+	}
 
 	// MVP
 	glm::mat4 mvp = projectionMatrix * modelViewMatrix;
@@ -108,15 +113,32 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 
 	// CELL ORIENTATION
 	glm::mat4 cellMm = glm::mat4();
-	printf("De values of the hand are: %f %f %f\n", leapData.roll, leapData.pitch, leapData.yaw);
+	//printf("De values of the hand are: %f %f %f\n", leapData.roll, leapData.pitch, leapData.yaw);
+	//printf("Data of the camera is: %d %d %d \n", extractCameraPosition(simCamera.getData()).x, extractCameraPosition(simCamera.getData()).y, extractCameraPosition(simCamera.getData()).z);
+	//cellMm = glm::translate(cellMm, glm::vec3(0, 0, leapData.handDifference/25));
+	//cellMm = glm::translate(cellMm, glm::vec3(0, 0, -(leapData.handDifference / 25)));
+	//cellMm = glm::translate(cellMm, glm::vec3(0, 0, (leapData.handDifference / 25)));
 	
-	if (leapListener.getHandMode() == 0)
+	if (leapListener.getHandMode() == LeapListener::HANDMODE_FIST)
 	{
-		cellMm = glm::rotate(cellMm, leapData.roll, glm::vec3(1, 0, 0));
-		cellMm = glm::rotate(cellMm, leapData.pitch, glm::vec3(0, 1, 0));
-		cellMm = glm::rotate(cellMm, leapData.yaw, glm::vec3(0, 0, 1));
+		cellMm = glm::rotate(cellMm, leapData.pitch, glm::vec3(1, 0, 0)); // Over the x-axis (pivot hand forth and back)
+		cellMm = glm::rotate(cellMm, leapData.roll, glm::vec3(0, 1, 0)); // Over the z-axis (pivot hand left and right)
+		//cellMm = glm::rotate(cellMm, leapData.yaw, glm::vec3(0, 0, 1)); // Over the y-axis (turn hand left and right)
+		roll = leapData.roll;
+		pitch = leapData.pitch;
 	}
+	else if (leapListener.getHandMode() == LeapListener::HANDMODE_SLICE || leapListener.getHandMode() == LeapListener::HANDMODE_FINGER || leapListener.getHandMode() == LeapListener::HANDMODE_ZOOM)
+	{
+		cellMm = glm::rotate(cellMm, pitch, glm::vec3(1, 0, 0)); // Over the x-axis (pivot hand forth and back)
+		cellMm = glm::rotate(cellMm, roll, glm::vec3(0, 0, 1)); // Over the z-axis (pivot hand left and right)
+	}
+	//cellMm = glm::translate(cellMm, glm::vec3(0, 0, 0));
+	//cellMm = glm::translate(cellMm, glm::vec3(0, 0, -(leapData.handDifference / 25)));
+	//cellMm = glm::translate(cellMm, glm::vec3(0, 0, -10));
+	
 	glm::mat4 cellMvm = modelViewMatrix * cellMm;
+
+	//cellMvm = glm::translate(cellMvm, glm::vec3(0, 0, -10));
 
 	// DRAW HAND
 	simpleShader->use();
