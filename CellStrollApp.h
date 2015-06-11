@@ -15,6 +15,7 @@
 #include <thread>
 #include "LeapListener.h"
 #include "LeapData.h"
+#include "ToolBox.h"
 
 class cTexture;
 
@@ -38,12 +39,13 @@ class CellStrollApp : public Application
 		Leap::Controller controller;
 		PositionalDevice simHead, simCamera;
 		ShaderProgram *simpleShader, *cellShader, *airShader;
+		GLuint lineShader;
 		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture, *fistTexture, *normalmap_a;
 		cModel *hand_model, *cell_model, *cube_model;
 		Light pointLight;
 		Plane clippingPlane;
 		clock_t clock_start;
-		glm::vec3 cPlane, cellRotation;
+		glm::vec3 cPlane;
 
 	public:
 		CellStrollApp(void);

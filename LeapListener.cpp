@@ -11,11 +11,13 @@ void LeapListener::onInit(const Leap::Controller &controller)
 
 void LeapListener::onFrame(const Leap::Controller &controller)
 {
+	//LIMIT LEAP UPDATES
 	lastLeapUpdate += timeDiff;
 	if (lastLeapUpdate <= 1.0f / LEAP_UPDATES_PER_SEC)
 		return;
 	lastLeapUpdate = 0;
 
+	//GET FRAME
 	const Leap::Frame frame = controller.frame();
 	if (frame.hands().isEmpty())
 		return;
@@ -29,21 +31,19 @@ void LeapListener::onFrame(const Leap::Controller &controller)
 	if (palmPosition == Leap::Vector::zero())
 		return;
 
+	//CHECK RIGHT HAND
 	const bool isRight = frame.hands()[0].isRight();
 
-	const Leap::Vector direction = frame.hands()[0].direction();
-	leapDataPtr->pitch = (direction.pitch() * 180 / 3.1415926)/20;
-	leapDataPtr->roll = (palmNormal.roll() * 180 / 3.1415926) / 20;
-	leapDataPtr->yaw = (direction.yaw() * 180 / 3.1415926)/20;
-
+	//CHECK FINGER GESTURES
 	const Leap::FingerList fingers = frame.hands()[0].fingers();
-	if (fingers.extended().count() > 4)
+	if (fingers.extended().count() > 3)
 		handMode = HANDMODE_SLICE;
-	else if (fingers.extended().count() <= 2 && !fingers.extended().fingerType(Leap::Finger::Type::TYPE_INDEX).isEmpty())
+	else if (fingers.extended().count() <= 3 && !fingers.extended().fingerType(Leap::Finger::Type::TYPE_INDEX).isEmpty())
 		handMode = HANDMODE_FINGER;
 	else if (fingers.extended().count() == 0)
 		handMode = HANDMODE_FIST;
 
+	//UPDATE LEAPDATA
 	leapDataPtr->palmPosition = glm::vec3(palmPosition.x, palmPosition.y, palmPosition.z);
 	leapDataPtr->palmNormal = glm::vec3(palmNormal.x, palmNormal.y, palmNormal.z);
 	leapDataPtr->isRight = isRight;

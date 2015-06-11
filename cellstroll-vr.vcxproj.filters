@@ -24,9 +24,6 @@
     <ClCompile Include="LeapListener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LeapData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CellStrollApp.h">
@@ -36,6 +33,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LeapData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
