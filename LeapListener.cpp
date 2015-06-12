@@ -31,6 +31,10 @@ void LeapListener::onFrame(const Leap::Controller &controller)
 	if (palmPosition == Leap::Vector::zero())
 		return;
 
+	const Leap::Vector direction = frame.hands()[0].direction();
+	if (direction == Leap::Vector::zero())
+		return;
+
 	//CHECK RIGHT HAND
 	const bool isRight = frame.hands()[0].isRight();
 
@@ -46,6 +50,7 @@ void LeapListener::onFrame(const Leap::Controller &controller)
 	//UPDATE LEAPDATA
 	leapDataPtr->palmPosition = glm::vec3(palmPosition.x, palmPosition.y, palmPosition.z);
 	leapDataPtr->palmNormal = glm::vec3(palmNormal.x, palmNormal.y, palmNormal.z);
+	leapDataPtr->direction = glm::vec3(direction.x, direction.y, direction.z);
 	leapDataPtr->isRight = isRight;
 }
 

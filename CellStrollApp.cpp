@@ -5,8 +5,6 @@
 CellStrollApp::CellStrollApp(void){}
 CellStrollApp::~CellStrollApp(void){}
 
-float roll, pitch;
-
 void CellStrollApp::init(void)
 {
 	//CONFIGS
@@ -35,7 +33,7 @@ void CellStrollApp::init(void)
 
 	//MODELS
 	hand_model = CaveLib::loadModel("data/CellStroll/models/hand.obj", new ModelLoadOptions(3.0f));
-	cell_model = CaveLib::loadModel("data/CellStroll/models/AnimallCell.obj", new ModelLoadOptions(10.0f));
+	cell_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(10.0f));
 	printf("De vertices van de cel zijn: %f %f %f",cell_model->getVertices()[0], cell_model->getVertices()[1], cell_model->getVertices()[2]);
 	cube_model = CaveLib::loadModel("data/CellStroll/models/cube.obj", new ModelLoadOptions(100.0f));
 
@@ -49,8 +47,8 @@ void CellStrollApp::init(void)
 	airShader = new ShaderProgram("data/CellStroll/shaders/air.vert", "data/CellStroll/shaders/air.frag");
 	airShader->link();
 
-	lineShader = createShaderProgram("data/CellStroll/shaders/line.vert", "data/CellStroll/shaders/line.frag");
-	glLinkProgram(lineShader);
+	pointShader = createShaderProgram("data/CellStroll/shaders/point.vert", "data/CellStroll/shaders/point.frag");
+	glLinkProgram(pointShader);
 
 	//LEAP
 	controller.addListener(leapListener);
@@ -81,12 +79,12 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glm::mat4 airMvp = glm::translate(mvp, glm::vec3(-50.0f, -50.0f, 50.0f));
 	glm::mat4 pointerMvp = glm::translate(mvp, rescaledPalmPosition(leapData.palmPosition));
 	glm::mat4 cellMm = glm::mat4();
-	glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
-	pointerMvp *= glm::inverse(rotMat);
 
 	// GESTURES
 	if (leapListener.getHandMode() == LeapListener::HANDMODE_SLICE)
 	{
+		glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
+		pointerMvp *= glm::inverse(rotMat);
 		cellMm = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.tempPalmPosition));
 		clippingPlane.point = rescaledPalmPosition(leapData.palmPosition);
 		clippingPlane.normal = leapData.palmNormal;
@@ -94,17 +92,22 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	}
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_FINGER)
 	{
+		glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, 0.0f, -1.0f), leapData.direction);
+		rotMat *= glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
+		pointerMvp *= glm::inverse(rotMat);
 		cellMm = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.tempPalmPosition));
-		line[0] = 0.0f;
-		line[1] = 0.0f;
-		line[2] = 0.0f;
-		line[3] = rescaledPalmPosition(leapData.palmPosition).x;
-		line[4] = rescaledPalmPosition(leapData.palmPosition).y;
-		line[5] = rescaledPalmPosition(leapData.palmPosition).z;
+		line[0] = rescaledPalmPosition(leapData.palmPosition).x;
+		line[1] = rescaledPalmPosition(leapData.palmPosition).y;
+		line[2] = rescaledPalmPosition(leapData.palmPosition).z;		
+		line[3] = rescaledPalmPosition(leapData.palmPosition).x + leapData.direction.x*5;
+		line[4] = rescaledPalmPosition(leapData.palmPosition).y + leapData.direction.y*5;
+		line[5] = rescaledPalmPosition(leapData.palmPosition).z + leapData.direction.z*5;			
 		handTexture = fingerTexture;
 	}
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_FIST)
 	{
+		glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
+		pointerMvp *= glm::inverse(rotMat);
 		cellMm = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.palmPosition));
 		leapData.ptr->tempPalmPosition = leapData.palmPosition;
 		handTexture = fistTexture;
@@ -158,24 +161,37 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	airShader->setUniformFloat("time", time);
 	airShader->setUniformMatrix4("modelViewProjectionMatrix", airMvp);
 	cube_model->draw(airShader);
+	glUseProgram(0);
 
 	// LINE
 	if (leapListener.getHandMode() == LeapListener::HANDMODE_FINGER)
 	{
-		glUseProgram(lineShader);
-		GLuint vbo, vao;
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-		glGenBuffers(1, &vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glUseProgram(pointShader);
+		GLuint vertexArray, vertexBuffer;
+
+		// VAO
+		glGenVertexArrays(1, &vertexArray);
+		glBindVertexArray(vertexArray);
+
+		//VBO
+		glGenBuffers(1, &vertexBuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(line), line, GL_STATIC_DRAW);
 
-		GLint a_pos = glGetAttribLocation(lineShader, "vertPosition");
-		glVertexAttribPointer(a_pos, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glLineWidth(3.0f);
-		glEnableVertexAttribArray(a_pos);
-		glBindVertexArray(vao);
-		glDrawArrays(GL_LINES, 0, 2);
+		// DRAW
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glUniformMatrix4fv(glGetUniformLocation(pointShader, "modelViewprojectionMatrix"), 1, 0, glm::value_ptr(mvp));
+
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_POINT_SMOOTH);
+		glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+		glPointSize(12.0f);
+		glDrawArrays(GL_POINTS, 1, 1);
+		//glLineWidth(3.0f);
+		//glDrawArrays(GL_LINES, 0, 2);
+		glDisableVertexAttribArray(0);
 	}
 	glUseProgram(0);
 }
