@@ -35,8 +35,8 @@ void CellStrollApp::init(void)
 
 	//MODELS
 	hand_model = CaveLib::loadModel("data/CellStroll/models/hand.obj", new ModelLoadOptions(3.0f));
-	cell_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(10.0f));
-	//cell_model = CaveLib::loadModel("data/CellStroll/models/AnimallCellNew.obj", new ModelLoadOptions(10.0f));
+	//cell_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(10.0f));
+	cell_model = CaveLib::loadModel("data/CellStroll/models/AnimallCellNew.obj", new ModelLoadOptions(10.0f));
 	printf("De vertices van de cel zijn: %f %f %f",cell_model->getVertices()[0], cell_model->getVertices()[1], cell_model->getVertices()[2]);
 	cube_model = CaveLib::loadModel("data/CellStroll/models/cube.obj", new ModelLoadOptions(100.0f));
 
@@ -54,6 +54,8 @@ void CellStrollApp::init(void)
 	controller.addListener(leapListener);
 	leapListener.setLeapData(&leapData);
 	leapListener.onInit(controller);
+
+	leapData.handDifference = -2;
 }
 
 void CellStrollApp::preFrame(double, double totalTime)
@@ -61,18 +63,21 @@ void CellStrollApp::preFrame(double, double totalTime)
 	GLfloat timeFctr = GLfloat(clock() - clock_start) / CLOCKS_PER_SEC; // calculate time(s) elapsed since last frame
 	clock_start = clock();
 	leapListener.setTimeDiff(timeFctr);
+}
 
-	if (GetAsyncKeyState(VK_RIGHT))
-	{
-		clippingPlane.point.y += 0.25f;
-		std::cout << clippingPlane.point.y << "\n";
-	}
-
-	if (GetAsyncKeyState(VK_LEFT))
-	{
-		clippingPlane.point.y -= 0.25f;
-		std::cout << clippingPlane.point.y << "\n";
-	}
+// SHOWING TEXT ON THE SCREEN
+void CellStrollApp::displayText(int x, int y, std::string string)
+{
+	cFont* font = new cFont("Tahoma");
+	partLabel.text = string;
+	partLabel.height = 1;
+	partLabel.width = 2;
+	partLabel.setFont(font);
+	//glTranslatef(x, y, 0);
+	partLabel.x = x;
+	partLabel.y = y;
+	partLabel.render(0.0f);
+	//partLabel.drawBox(x, y, 0, 2, 1, 1);
 }
 
 void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &modelViewMatrix)
@@ -82,6 +87,14 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 
 	// UPDATE TIME UNIFORM
 	GLfloat time = GLfloat(clock()) / GLfloat(CLOCKS_PER_SEC);
+
+	// MVP
+	glm::mat4 mvp = projectionMatrix * modelViewMatrix;
+	glm::mat4 airMvp = glm::translate(mvp, glm::vec3(-50.0f, -50.0f, 50.0f));
+	glm::mat4 pointerMvp = glm::translate(mvp, rescaledPalmPosition(leapData.palmPosition));
+	glm::mat4 cellMm = glm::mat4();
+	glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
+	pointerMvp *= glm::inverse(rotMat);
 
 	// CLIPPING PLANE
 	if (leapListener.getHandMode() == LeapListener::HANDMODE_SLICE)
@@ -96,29 +109,22 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	}
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_FIST)
 	{
-		cellRotation = rescaledPalmPosition(leapData.palmPosition);
 		handTexture = fistTexture;
 	}
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_ZOOM)
 	{
-
 	}
 
-	// MVP
-	glm::mat4 mvp = projectionMatrix * modelViewMatrix;
-	glm::mat4 airMvp = glm::translate(mvp, glm::vec3(-50.0f, -50.0f, 50.0f));
-	glm::mat4 pointerMvp = glm::translate(mvp, rescaledPalmPosition(leapData.palmPosition));
-	glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
-	pointerMvp *= glm::inverse(rotMat);
-
-	// CELL ORIENTATION
-	glm::mat4 cellMm = glm::mat4();
-	//printf("De values of the hand are: %f %f %f\n", leapData.roll, leapData.pitch, leapData.yaw);
-	//printf("Data of the camera is: %d %d %d \n", extractCameraPosition(simCamera.getData()).x, extractCameraPosition(simCamera.getData()).y, extractCameraPosition(simCamera.getData()).z);
-	//cellMm = glm::translate(cellMm, glm::vec3(0, 0, leapData.handDifference/25));
-	//cellMm = glm::translate(cellMm, glm::vec3(0, 0, -(leapData.handDifference / 25)));
-	//cellMm = glm::translate(cellMm, glm::vec3(0, 0, (leapData.handDifference / 25)));
+	// SCALING OF THE CELL
+	if (leapData.handDifference / 50 - 2 >= 0 && leapData.handDifference / 50 - 2 <= 8)
+	{
+		xScale = (leapData.handDifference / 50 - 2);
+		yScale = (leapData.handDifference / 50 - 2);
+		zScale = (leapData.handDifference / 50 - 2);
+	}
+	cellMm = glm::scale(cellMm, glm::vec3(xScale, yScale, zScale));
 	
+	// CELL ROTATION
 	if (leapListener.getHandMode() == LeapListener::HANDMODE_FIST)
 	{
 		cellMm = glm::rotate(cellMm, leapData.pitch, glm::vec3(1, 0, 0)); // Over the x-axis (pivot hand forth and back)
@@ -132,13 +138,8 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		cellMm = glm::rotate(cellMm, pitch, glm::vec3(1, 0, 0)); // Over the x-axis (pivot hand forth and back)
 		cellMm = glm::rotate(cellMm, roll, glm::vec3(0, 0, 1)); // Over the z-axis (pivot hand left and right)
 	}
-	//cellMm = glm::translate(cellMm, glm::vec3(0, 0, 0));
-	//cellMm = glm::translate(cellMm, glm::vec3(0, 0, -(leapData.handDifference / 25)));
-	//cellMm = glm::translate(cellMm, glm::vec3(0, 0, -10));
-	
-	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 
-	//cellMvm = glm::translate(cellMvm, glm::vec3(0, 0, -10));
+	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 
 	// DRAW HAND
 	simpleShader->use();

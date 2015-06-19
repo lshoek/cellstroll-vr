@@ -14,7 +14,6 @@ class LeapListener : public Leap::Listener
 		GLfloat lastLeapUpdate = 0, timeDiff = 0;
 		const int LEAP_UPDATES_PER_SEC = 60;
 		int handMode = HANDMODE_SLICE;
-		float handDifference = 50;
 		bool startMovement;
 		Leap::Vector posHandRight, posHandLeft;
 
