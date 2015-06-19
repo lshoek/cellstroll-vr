@@ -15,6 +15,9 @@
 #include <thread>
 #include "LeapListener.h"
 #include "LeapData.h"
+#include <CaveLib\ModelViewer\glut\glut.h>
+#include <CaveLib\Components\Label.h>
+#include <CaveLib\font.h>
 #include "ToolBox.h"
 
 class cTexture;
@@ -46,6 +49,8 @@ class CellStrollApp : public Application
 		Plane clippingPlane;
 		clock_t clock_start;
 		glm::vec3 cPlane;
+		Label partLabel = Label("Nothing selected!");
+		float xScale, yScale, zScale;
 
 	public:
 		CellStrollApp(void);
@@ -54,4 +59,5 @@ class CellStrollApp : public Application
 		virtual void preFrame(double, double);
 		virtual void draw(const glm::mat4 &, const glm::mat4 &);
 		glm::vec3 extractCameraPosition(const glm::mat4&);
+		void displayText(int x, int y, std::string string);
 };

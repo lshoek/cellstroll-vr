@@ -24,7 +24,7 @@ void CellStrollApp::init(void)
 	clippingPlane.normal = glm::vec3(0.0f, -1.0f, 0.0f);
 
 	// TEXTURES
-	cellTexture = CaveLib::loadTexture("data/CellStroll/models/CoreTexture.png", new TextureLoadOptions(GL_FALSE));
+	cellTexture = CaveLib::loadTexture("data/CellStroll/models/CoreTextureNew.png", new TextureLoadOptions(GL_FALSE));
 	sliceTexture = CaveLib::loadTexture("data/CellStroll/models/hand.png", new TextureLoadOptions(GL_FALSE));
 	fingerTexture = CaveLib::loadTexture("data/CellStroll/models/finger.png", new TextureLoadOptions(GL_FALSE));
 	fistTexture = CaveLib::loadTexture("data/CellStroll/models/fist.png", new TextureLoadOptions(GL_FALSE));
@@ -33,7 +33,6 @@ void CellStrollApp::init(void)
 
 	//MODELS
 	hand_model = CaveLib::loadModel("data/CellStroll/models/hand.obj", new ModelLoadOptions(3.0f));
-	cell_model = CaveLib::loadModel("data/CellStroll/models/AnimallCell.obj", new ModelLoadOptions(10.0f));
 	cube_model = CaveLib::loadModel("data/CellStroll/models/cube.obj", new ModelLoadOptions(100.0f));
 	pointer_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(0.25f));
 	printf("vertices cell: %f %f %f", cell_model->getVertices()[0], cell_model->getVertices()[1], cell_model->getVertices()[2]);
@@ -55,6 +54,8 @@ void CellStrollApp::init(void)
 	controller.addListener(leapListener);
 	leapListener.setLeapData(&leapData);
 	leapListener.onInit(controller);
+
+	leapData.handDifference = -2;
 }
 
 void CellStrollApp::preFrame(double, double totalTime)
@@ -62,6 +63,21 @@ void CellStrollApp::preFrame(double, double totalTime)
 	GLfloat timeFctr = GLfloat(clock() - clock_start) / CLOCKS_PER_SEC; // calculate time(s) elapsed since last frame
 	clock_start = clock();
 	leapListener.setTimeDiff(timeFctr);
+}
+
+// SHOWING TEXT ON THE SCREEN
+void CellStrollApp::displayText(int x, int y, std::string string)
+{
+	cFont* font = new cFont("Tahoma");
+	partLabel.text = string;
+	partLabel.height = 1;
+	partLabel.width = 2;
+	partLabel.setFont(font);
+	//glTranslatef(x, y, 0);
+	partLabel.x = x;
+	partLabel.y = y;
+	partLabel.render(0.0f);
+	//partLabel.drawBox(x, y, 0, 2, 1, 1);
 }
 
 void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &modelViewMatrix)
@@ -118,6 +134,19 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		leapData.ptr->tempPalmPosition = leapData.palmPosition;
 		handTexture = fistTexture;
 	}
+	else if (leapListener.getHandMode() == LeapListener::HANDMODE_ZOOM)
+	{
+		if (leapData.handDifference / 50 - 2 >= 0 && leapData.handDifference / 50 - 2 <= 8)
+		{
+			xScale = (leapData.handDifference / 50 - 2);
+			yScale = (leapData.handDifference / 50 - 2);
+			zScale = (leapData.handDifference / 50 - 2);
+		}
+	}
+
+	// SCALING OF THE CELL
+	cellMm = glm::scale(cellMm, glm::vec3(xScale, yScale, zScale));
+
 	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 
 	// DRAW HAND

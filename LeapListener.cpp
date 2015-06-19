@@ -19,6 +19,8 @@ void LeapListener::onFrame(const Leap::Controller &controller)
 
 	//GET FRAME
 	const Leap::Frame frame = controller.frame();
+	const Leap::FingerList fingers = frame.hands()[0].fingers();
+
 	if (frame.hands().isEmpty())
 		return;
 
@@ -31,21 +33,51 @@ void LeapListener::onFrame(const Leap::Controller &controller)
 	if (palmPosition == Leap::Vector::zero())
 		return;
 
-	const Leap::Vector direction = frame.hands()[0].direction();
-	if (direction == Leap::Vector::zero())
-		return;
-
-	//CHECK RIGHT HAND
 	const bool isRight = frame.hands()[0].isRight();
 
-	//CHECK FINGER GESTURES
-	const Leap::FingerList fingers = frame.hands()[0].fingers();
-	if (fingers.extended().count() > 3)
-		handMode = HANDMODE_SLICE;
-	else if (fingers.extended().count() <= 3 && !fingers.extended().fingerType(Leap::Finger::Type::TYPE_INDEX).isEmpty())
-		handMode = HANDMODE_FINGER;
-	else if (fingers.extended().count() == 0)
-		handMode = HANDMODE_FIST;
+	// Rotation tracking
+	const Leap::Vector normal = frame.hands()[0].palmNormal();
+	const Leap::Vector direction = frame.hands()[0].direction();
+
+	if (frame.hands().count() == 2)
+	{
+		// Zooming in and out
+		handMode = HANDMODE_ZOOM;
+		if (frame.hands()[0].fingers().extended().count() == 5 && frame.hands()[1].fingers().extended().count() == 5) // check if hands are open
+		{
+			// pass the center position of the palm to the variables
+			if (frame.hands()[0].isRight()) // checks if first hand is the right hand
+			{
+				posHandRight = frame.hands()[0].palmPosition();
+				posHandLeft = frame.hands()[1].palmPosition();
+			}
+			else if (frame.hands()[1].isRight()) // checks if second hand is right hand
+			{
+				posHandRight = frame.hands()[1].palmPosition();
+				posHandLeft = frame.hands()[0].palmPosition();
+			}
+			leapDataPtr->handDifference = posHandRight.distanceTo(posHandLeft);
+			//printf("The difference between hands is: %f\n", (leapDataPtr->handDifference/25));
+		}
+		// Stop zooming out and zooming in, a.k.a hold.
+		else if (frame.hands()[0].fingers().extended().count() == 0 && frame.hands()[1].fingers().extended().count() == 0)
+		{
+			
+		}
+	}
+
+	leapDataPtr->pitch = (direction.pitch() * 180 / 3.1415926)/20;
+	leapDataPtr->roll = (palmNormal.roll() * 180 / 3.1415926) / 20;
+	leapDataPtr->yaw = (direction.yaw() * 180 / 3.1415926)/20;
+	if (frame.hands().count() == 1)
+	{
+		if (fingers.extended().count() > 4)
+			handMode = HANDMODE_SLICE;
+		else if (fingers.extended().count() <= 2 && !fingers.extended().fingerType(Leap::Finger::Type::TYPE_INDEX).isEmpty())
+			handMode = HANDMODE_FINGER;
+		else if (fingers.extended().count() == 0)
+			handMode = HANDMODE_FIST;
+	}
 
 	//UPDATE LEAPDATA
 	leapDataPtr->palmPosition = glm::vec3(palmPosition.x, palmPosition.y, palmPosition.z);

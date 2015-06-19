@@ -14,6 +14,7 @@ class LeapData
 		glm::vec3 palmNormal = glm::vec3(0.0f, 1.0f, 0.0f);
 		glm::vec3 direction = glm::vec3(0.0f, 0.0f, 1.0f);
 		bool isRight;
+		float pitch, roll, yaw, handDifference;
 
 		inline glm::vec3 getPointer()
 		{
