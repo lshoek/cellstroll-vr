@@ -39,9 +39,9 @@ class CellStrollApp : public Application
 		Leap::Controller controller;
 		PositionalDevice simHead, simCamera;
 		ShaderProgram *simpleShader, *cellShader, *airShader;
-		GLuint pointShader;
+		GLuint lineShader;
 		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture, *fistTexture, *normalmap_a;
-		cModel *hand_model, *cell_model, *cube_model;
+		cModel *hand_model, *cell_model, *cube_model, *pointer_model;
 		Light pointLight;
 		Plane clippingPlane;
 		clock_t clock_start;
@@ -54,5 +54,4 @@ class CellStrollApp : public Application
 		virtual void preFrame(double, double);
 		virtual void draw(const glm::mat4 &, const glm::mat4 &);
 		glm::vec3 extractCameraPosition(const glm::mat4&);
-		glm::vec3 rescaledPalmPosition(glm::vec3 fingerPos);
 };

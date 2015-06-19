@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <GL\glew.h>
+#include <glm/gtc/type_ptr.hpp>
 
 inline GLuint loadShader(std::string fname, GLenum type)
 {
@@ -47,4 +48,14 @@ inline GLuint createShaderProgram(std::string vertexShader, std::string fragment
 	glAttachShader(shaderProgram, fShader);
 	
 	return shaderProgram;
+}
+
+inline bool sphereCollision(glm::vec3 pointer, glm::vec3 sphereCenter, GLfloat sphereRadius)
+{
+	glm::vec3 diff = pointer - sphereCenter;
+	GLfloat distance = glm::sqrt(diff.x * diff.x + diff.y * diff.y + diff.z*diff.z);
+	std::cout << distance << "\n";
+	if (distance < sphereRadius)
+		return true;
+	return false;
 }
