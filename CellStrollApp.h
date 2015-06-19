@@ -18,6 +18,7 @@
 #include <CaveLib\ModelViewer\glut\glut.h>
 #include <CaveLib\Components\Label.h>
 #include <CaveLib\font.h>
+#include "ToolBox.h"
 
 class cTexture;
 
@@ -41,6 +42,7 @@ class CellStrollApp : public Application
 		Leap::Controller controller;
 		PositionalDevice simHead, simCamera;
 		ShaderProgram *simpleShader, *cellShader, *airShader;
+		GLuint pointShader;
 		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture, *fistTexture, *normalmap_a;
 		cModel *hand_model, *cell_model, *cube_model;
 		Light pointLight;

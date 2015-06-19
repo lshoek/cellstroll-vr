@@ -11,11 +11,13 @@ void LeapListener::onInit(const Leap::Controller &controller)
 
 void LeapListener::onFrame(const Leap::Controller &controller)
 {
+	//LIMIT LEAP UPDATES
 	lastLeapUpdate += timeDiff;
 	if (lastLeapUpdate <= 1.0f / LEAP_UPDATES_PER_SEC)
 		return;
 	lastLeapUpdate = 0;
 
+	//GET FRAME
 	const Leap::Frame frame = controller.frame();
 	const Leap::FingerList fingers = frame.hands()[0].fingers();
 
@@ -77,8 +79,10 @@ void LeapListener::onFrame(const Leap::Controller &controller)
 			handMode = HANDMODE_FIST;
 	}
 
+	//UPDATE LEAPDATA
 	leapDataPtr->palmPosition = glm::vec3(palmPosition.x, palmPosition.y, palmPosition.z);
 	leapDataPtr->palmNormal = glm::vec3(palmNormal.x, palmNormal.y, palmNormal.z);
+	leapDataPtr->direction = glm::vec3(direction.x, direction.y, direction.z);
 	leapDataPtr->isRight = isRight;
 }
 

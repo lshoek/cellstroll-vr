@@ -5,8 +5,6 @@
 CellStrollApp::CellStrollApp(void){}
 CellStrollApp::~CellStrollApp(void){}
 
-float roll, pitch;
-
 void CellStrollApp::init(void)
 {
 	//CONFIGS
@@ -50,6 +48,9 @@ void CellStrollApp::init(void)
 	airShader = new ShaderProgram("data/CellStroll/shaders/air.vert", "data/CellStroll/shaders/air.frag");
 	airShader->link();
 
+	pointShader = createShaderProgram("data/CellStroll/shaders/point.vert", "data/CellStroll/shaders/point.frag");
+	glLinkProgram(pointShader);
+
 	//LEAP
 	controller.addListener(leapListener);
 	leapListener.setLeapData(&leapData);
@@ -88,56 +89,59 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	// UPDATE TIME UNIFORM
 	GLfloat time = GLfloat(clock()) / GLfloat(CLOCKS_PER_SEC);
 
+	//LINE
+	GLfloat line[6];
+
 	// MVP
 	glm::mat4 mvp = projectionMatrix * modelViewMatrix;
 	glm::mat4 airMvp = glm::translate(mvp, glm::vec3(-50.0f, -50.0f, 50.0f));
 	glm::mat4 pointerMvp = glm::translate(mvp, rescaledPalmPosition(leapData.palmPosition));
 	glm::mat4 cellMm = glm::mat4();
-	glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
-	pointerMvp *= glm::inverse(rotMat);
 
-	// CLIPPING PLANE
+	// GESTURES
 	if (leapListener.getHandMode() == LeapListener::HANDMODE_SLICE)
 	{
+		glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
+		pointerMvp *= glm::inverse(rotMat);
+		cellMm = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.tempPalmPosition));
 		clippingPlane.point = rescaledPalmPosition(leapData.palmPosition);
 		clippingPlane.normal = leapData.palmNormal;
 		handTexture = sliceTexture;
 	}
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_FINGER)
 	{
+		glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, 0.0f, -1.0f), leapData.direction);
+		rotMat *= glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
+		pointerMvp *= glm::inverse(rotMat);
+		cellMm = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.tempPalmPosition));
+		line[0] = rescaledPalmPosition(leapData.palmPosition).x;
+		line[1] = rescaledPalmPosition(leapData.palmPosition).y;
+		line[2] = rescaledPalmPosition(leapData.palmPosition).z;		
+		line[3] = rescaledPalmPosition(leapData.palmPosition).x + leapData.direction.x*5;
+		line[4] = rescaledPalmPosition(leapData.palmPosition).y + leapData.direction.y*5;
+		line[5] = rescaledPalmPosition(leapData.palmPosition).z + leapData.direction.z*5;			
 		handTexture = fingerTexture;
 	}
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_FIST)
 	{
+		glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
+		pointerMvp *= glm::inverse(rotMat);
+		cellMm = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.palmPosition));
+		leapData.ptr->tempPalmPosition = leapData.palmPosition;
 		handTexture = fistTexture;
 	}
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_ZOOM)
 	{
+		if (leapData.handDifference / 50 - 2 >= 0 && leapData.handDifference / 50 - 2 <= 8)
+		{
+			xScale = (leapData.handDifference / 50 - 2);
+			yScale = (leapData.handDifference / 50 - 2);
+			zScale = (leapData.handDifference / 50 - 2);
+		}
 	}
 
 	// SCALING OF THE CELL
-	if (leapData.handDifference / 50 - 2 >= 0 && leapData.handDifference / 50 - 2 <= 8)
-	{
-		xScale = (leapData.handDifference / 50 - 2);
-		yScale = (leapData.handDifference / 50 - 2);
-		zScale = (leapData.handDifference / 50 - 2);
-	}
 	cellMm = glm::scale(cellMm, glm::vec3(xScale, yScale, zScale));
-	
-	// CELL ROTATION
-	if (leapListener.getHandMode() == LeapListener::HANDMODE_FIST)
-	{
-		cellMm = glm::rotate(cellMm, leapData.pitch, glm::vec3(1, 0, 0)); // Over the x-axis (pivot hand forth and back)
-		cellMm = glm::rotate(cellMm, leapData.roll, glm::vec3(0, 1, 0)); // Over the z-axis (pivot hand left and right)
-		//cellMm = glm::rotate(cellMm, leapData.yaw, glm::vec3(0, 0, 1)); // Over the y-axis (turn hand left and right)
-		roll = leapData.roll;
-		pitch = leapData.pitch;
-	}
-	else if (leapListener.getHandMode() == LeapListener::HANDMODE_SLICE || leapListener.getHandMode() == LeapListener::HANDMODE_FINGER || leapListener.getHandMode() == LeapListener::HANDMODE_ZOOM)
-	{
-		cellMm = glm::rotate(cellMm, pitch, glm::vec3(1, 0, 0)); // Over the x-axis (pivot hand forth and back)
-		cellMm = glm::rotate(cellMm, roll, glm::vec3(0, 0, 1)); // Over the z-axis (pivot hand left and right)
-	}
 
 	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 
@@ -188,7 +192,38 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	airShader->setUniformFloat("time", time);
 	airShader->setUniformMatrix4("modelViewProjectionMatrix", airMvp);
 	cube_model->draw(airShader);
+	glUseProgram(0);
 
+	// LINE
+	if (leapListener.getHandMode() == LeapListener::HANDMODE_FINGER)
+	{
+		glUseProgram(pointShader);
+		GLuint vertexArray, vertexBuffer;
+
+		// VAO
+		glGenVertexArrays(1, &vertexArray);
+		glBindVertexArray(vertexArray);
+
+		//VBO
+		glGenBuffers(1, &vertexBuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(line), line, GL_STATIC_DRAW);
+
+		// DRAW
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glUniformMatrix4fv(glGetUniformLocation(pointShader, "modelViewprojectionMatrix"), 1, 0, glm::value_ptr(mvp));
+
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_POINT_SMOOTH);
+		glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+		glPointSize(12.0f);
+		glDrawArrays(GL_POINTS, 1, 1);
+		//glLineWidth(3.0f);
+		//glDrawArrays(GL_LINES, 0, 2);
+		glDisableVertexAttribArray(0);
+	}
 	glUseProgram(0);
 }
 

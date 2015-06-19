@@ -5,10 +5,14 @@
 class LeapData
 {
 	public:
-		LeapData();
-		~LeapData();
+		inline LeapData(){};
+		inline ~LeapData(){};
 
-		glm::vec3 palmPosition, palmNormal;
+		LeapData* ptr = this;
+		glm::vec3 palmPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+		glm::vec3 tempPalmPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+		glm::vec3 palmNormal = glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::vec3 direction = glm::vec3(0.0f, 0.0f, 1.0f);
 		bool isRight;
 		float pitch, roll, yaw, handDifference;
 };
