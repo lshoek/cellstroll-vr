@@ -40,7 +40,7 @@ class CellStrollApp : public Application
 		LeapData leapData;
 		LeapListener leapListener;
 		Leap::Controller controller;
-		PositionalDevice positionalDeviceCamera;
+		PositionalDevice simHead, simCamera;
 		ShaderProgram *simpleShader, *cellShader, *airShader;
 		GLuint lineShader;
 		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture, *fistTexture, *normalmap_a;
@@ -48,18 +48,20 @@ class CellStrollApp : public Application
 		Light pointLight;
 		Plane clippingPlane;
 		clock_t clock_start;
-		glm::vec3 center, cPlane;
+		glm::vec3 cPlane;
 		Label partLabel = Label("Nothing selected!");
 		float xScale, yScale, zScale;
 
 	public:
-		enum ViewConfig { OCULUS_VIEW, SIMULATION_VIEW };
 		CellStrollApp(void);
 		~CellStrollApp(void);
 		virtual void init();
 		virtual void preFrame(double, double);
 		virtual void draw(const glm::mat4 &, const glm::mat4 &);
-		glm::vec3 extractCameraPosition(const glm::mat4 &);
+		glm::vec3 extractCameraPosition(const glm::mat4&);
+<<<<<<< HEAD
+=======
+		glm::vec3 rescaledPalmPosition(glm::vec3 fingerPos);
 		void displayText(int x, int y, std::string string);
-		void setPositionalDevice(ViewConfig);
+>>>>>>> c89d21030d1228a912d39a1a77798cf577a4c5ec
 };

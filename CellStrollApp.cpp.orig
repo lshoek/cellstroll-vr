@@ -8,10 +8,10 @@ CellStrollApp::~CellStrollApp(void){}
 void CellStrollApp::init(void)
 {
 	//CONFIGS
-	setPositionalDevice(CellStrollApp::OCULUS_VIEW);
+	simHead.init("MainUserHead");
+	simCamera.init("CameraPosition");
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-	center = glm::vec3(0.0f, 0.0f, -10.0f);
 
 	//LIGHTING
 	pointLight.position = glm::vec3(20.0f, 10.0f, 0.0f);
@@ -32,8 +32,14 @@ void CellStrollApp::init(void)
 	handTexture = sliceTexture;
 
 	//MODELS
-	cell_model = CaveLib::loadModel("data/CellStroll/models/AnimallCellNew.obj", new ModelLoadOptions(10.0f));
 	hand_model = CaveLib::loadModel("data/CellStroll/models/hand.obj", new ModelLoadOptions(3.0f));
+<<<<<<< HEAD
+	cell_model = CaveLib::loadModel("data/CellStroll/models/AnimallCell.obj", new ModelLoadOptions(10.0f));
+=======
+	//cell_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(10.0f));
+	cell_model = CaveLib::loadModel("data/CellStroll/models/AnimallCellNew.obj", new ModelLoadOptions(10.0f));
+	printf("De vertices van de cel zijn: %f %f %f",cell_model->getVertices()[0], cell_model->getVertices()[1], cell_model->getVertices()[2]);
+>>>>>>> c89d21030d1228a912d39a1a77798cf577a4c5ec
 	cube_model = CaveLib::loadModel("data/CellStroll/models/cube.obj", new ModelLoadOptions(100.0f));
 	pointer_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(0.25f));
 	printf("vertices cell: %f %f %f", cell_model->getVertices()[0], cell_model->getVertices()[1], cell_model->getVertices()[2]);
@@ -96,23 +102,24 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glm::mat4 airMvp = glm::translate(mvp, glm::vec3(-50.0f, -50.0f, 50.0f));
 	glm::mat4 pointerMvp = glm::translate(mvp, LeapData::rescale(leapData.palmPosition));
 	glm::mat4 pointerDirectionMvp;
-	glm::mat4 cellMm = glm::translate(glm::mat4(), center);
+	glm::mat4 cellMm = glm::mat4();
 
 	// GESTURES
-	glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
-	pointerMvp *= glm::inverse(rotMat);
-
 	if (leapListener.getHandMode() == LeapListener::HANDMODE_SLICE)
 	{
-		cellMm *= glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.tempPalmPosition));
+		glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
+		pointerMvp *= glm::inverse(rotMat);
+		cellMm = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.tempPalmPosition));
 		clippingPlane.point = LeapData::rescale(leapData.palmPosition);
 		clippingPlane.normal = leapData.palmNormal;
 		handTexture = sliceTexture;
 	}
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_FINGER)
 	{
-		rotMat *= glm::orientation(glm::vec3(0.0f, 0.0f, -1.0f), leapData.direction);
-		cellMm *= glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.tempPalmPosition));
+		glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, 0.0f, -1.0f), leapData.direction);
+		rotMat *= glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
+		pointerMvp *= glm::inverse(rotMat);
+		cellMm = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.tempPalmPosition));
 
 		// DRAW POINTER LINE
 		line[0] = LeapData::rescale(leapData.palmPosition).x;
@@ -122,13 +129,15 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		line[4] = leapData.getPointer().y;
 		line[5] = leapData.getPointer().z;
 
-		pointerDirectionMvp *= glm::translate(mvp, leapData.getPointer());
-		collision = sphereCollision(leapData.getPointer(), center, 4.0f);
+		pointerDirectionMvp = glm::translate(mvp, leapData.getPointer());
+		collision = sphereCollision(leapData.getPointer(), glm::vec3(0.0f, 0.0f, 0.0f), 4.0f);
 		handTexture = fingerTexture;
 	}
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_FIST)
 	{
-		cellMm *= glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.palmPosition));
+		glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
+		pointerMvp *= glm::inverse(rotMat);
+		cellMm = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.palmPosition));
 		leapData.ptr->tempPalmPosition = leapData.palmPosition;
 		handTexture = fistTexture;
 	}
@@ -144,6 +153,7 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 
 	// SCALING OF THE CELL
 	cellMm = glm::scale(cellMm, glm::vec3(xScale, yScale, zScale));
+
 	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 
 	// DRAW HAND
@@ -162,7 +172,7 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	simpleShader->setUniformBool("texEnabled", true);
 	simpleShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
 	simpleShader->setUniformFloat("materialShininess", 5.0f);
-	simpleShader->setUniformVec3("cameraPosition", extractCameraPosition(positionalDeviceCamera.getData()));
+	simpleShader->setUniformVec3("cameraPosition", extractCameraPosition(simCamera.getData()));
 	hand_model->draw(simpleShader);
 
 	// DRAW CELL
@@ -187,8 +197,8 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	cellShader->setUniformBool("collision", collision);
 	cellShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
 	cellShader->setUniformFloat("materialShininess", 5.0f);
-	cellShader->setUniformVec3("cameraPosition", extractCameraPosition(positionalDeviceCamera.getData()));
-	cell_model->draw(cellShader  );
+	cellShader->setUniformVec3("cameraPosition", extractCameraPosition(simCamera.getData()));
+	cell_model->draw(cellShader);
 
 	// DRAW AIR
 	airShader->use();
@@ -196,7 +206,7 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	airShader->setUniformMatrix4("modelViewProjectionMatrix", airMvp);
 	cube_model->draw(airShader);
 
-	// LINE
+	// LINE /*
 	if (leapListener.getHandMode() == LeapListener::HANDMODE_FINGER)
 	{
 		simpleShader->use();
@@ -228,14 +238,6 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		glDisableVertexAttribArray(0);
 	}
 	glUseProgram(0);
-}
-
-void CellStrollApp::setPositionalDevice(ViewConfig config)
-{
-	if (config == OCULUS_VIEW)
-		positionalDeviceCamera.init("MainUserHead");
-	else
-		positionalDeviceCamera.init("CameraPosition");
 }
 
 glm::vec3 CellStrollApp::extractCameraPosition(const glm::mat4 &modelView)
