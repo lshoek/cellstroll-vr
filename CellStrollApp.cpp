@@ -34,7 +34,7 @@ void CellStrollApp::init(void)
 	//MODELS
 	cell_model = CaveLib::loadModel("data/CellStroll/models/AnimallCellNew.obj", new ModelLoadOptions(10.0f));
 	hand_model = CaveLib::loadModel("data/CellStroll/models/hand.obj", new ModelLoadOptions(3.0f));
-	cube_model = CaveLib::loadModel("data/CellStroll/models/cube.obj", new ModelLoadOptions(100.0f));
+	air_model = CaveLib::loadModel("data/CellStroll/models/sphere2.obj", new ModelLoadOptions(100.0f));
 	pointer_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(0.25f));
 	printf("vertices cell: %f %f %f", cell_model->getVertices()[0], cell_model->getVertices()[1], cell_model->getVertices()[2]);
 
@@ -93,7 +93,6 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 
 	// MVP
 	glm::mat4 mvp = projectionMatrix * modelViewMatrix;
-	glm::mat4 airMvp = glm::translate(mvp, glm::vec3(-50.0f, -50.0f, 50.0f));
 	glm::mat4 pointerMvp = glm::translate(mvp, LeapData::rescale(leapData.palmPosition));
 	glm::mat4 pointerDirectionMvp;
 	glm::mat4 cellMm = glm::translate(glm::mat4(), center);
@@ -193,8 +192,8 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	// DRAW AIR
 	airShader->use();
 	airShader->setUniformFloat("time", time);
-	airShader->setUniformMatrix4("modelViewProjectionMatrix", airMvp);
-	cube_model->draw(airShader);
+	airShader->setUniformMatrix4("modelViewProjectionMatrix", glm::rotate(mvp, 90.0f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	air_model->draw(airShader);
 
 	// LINE
 	if (leapListener.getHandMode() == LeapListener::HANDMODE_FINGER)

@@ -44,7 +44,7 @@ class CellStrollApp : public Application
 		ShaderProgram *simpleShader, *cellShader, *airShader;
 		GLuint lineShader;
 		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture, *fistTexture, *normalmap_a;
-		cModel *hand_model, *cell_model, *cube_model, *pointer_model;
+		cModel *hand_model, *cell_model, *air_model, *pointer_model;
 		Light pointLight;
 		Plane clippingPlane;
 		clock_t clock_start;
