@@ -37,17 +37,28 @@ class CellStrollApp : public Application
 			glm::vec3 point;
 			glm::vec3 normal;
 		};
+		struct FrameBufferObject
+		{
+			GLuint fboID;
+			GLuint rboID;
+			GLuint fboTextureID;
+			GLuint rboTextureID;
+			std::vector<ShaderProgram*> fboShaders;
+			int currentShader = 0;
+		};
 		LeapData leapData;
 		LeapListener leapListener;
 		Leap::Controller controller;
 		PositionalDevice positionalDeviceCamera;
-		ShaderProgram *simpleShader, *cellShader, *airShader;
+		ShaderProgram *simpleShader, *cellShader, *airShader, *fboShader;
 		GLuint lineShader;
 		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture, *fistTexture, *normalmap_a;
 		cModel *hand_model, *cell_model, *air_model, *pointer_model;
 		Light pointLight;
 		Plane clippingPlane;
+		FrameBufferObject fbo;
 		clock_t clock_start;
+		glm::vec2 screenSize;
 		glm::vec3 center, cPlane;
 		Label partLabel = Label("Nothing selected!");
 		float xScale, yScale, zScale;

@@ -11,6 +11,9 @@ void CellStrollApp::init(void)
 	setPositionalDevice(CellStrollApp::OCULUS_VIEW);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+
+	// SCREEN & WORLD
+	screenSize = glm::vec2(Kernel::getInstance()->getWindowWidth(), Kernel::getInstance()->getWindowHeight());
 	center = glm::vec3(0.0f, 0.0f, -10.0f);
 
 	//LIGHTING
@@ -47,6 +50,9 @@ void CellStrollApp::init(void)
 
 	airShader = new ShaderProgram("data/CellStroll/shaders/air.vert", "data/CellStroll/shaders/air.frag");
 	airShader->link();
+
+	fboShader = new ShaderProgram("data/CellStroll/shaders/fbo.vert", "data/CellStroll/shaders/fbo.frag");
+	fboShader->link();
 
 	lineShader = createShaderProgram("data/CellStroll/shaders/line.vert", "data/CellStroll/shaders/line.frag");
 	glLinkProgram(lineShader);
@@ -187,7 +193,7 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	cellShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
 	cellShader->setUniformFloat("materialShininess", 5.0f);
 	cellShader->setUniformVec3("cameraPosition", extractCameraPosition(positionalDeviceCamera.getData()));
-	cell_model->draw(cellShader  );
+	cell_model->draw(cellShader);
 
 	// DRAW AIR
 	airShader->use();
@@ -226,6 +232,53 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		glDrawArrays(GL_LINES, 0, 2);
 		glDisableVertexAttribArray(0);
 	}
+
+	//FBO
+	/*
+	GLuint fbo = 0;
+	GLuint rbo = 0;
+	GLuint texId = 0;
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glGenTextures(1, &texId);
+	glBindTexture(GL_TEXTURE_2D, texId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenSize.x, screenSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texId, 0);
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, screenSize.x, screenSize.y);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+	GLint viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+
+	std::vector<glm::vec2> verts;
+	verts.push_back(glm::vec2(-1, -1));
+	verts.push_back(glm::vec2(1, -1));
+	verts.push_back(glm::vec2(1, 1));
+	verts.push_back(glm::vec2(-1, 1));
+
+	fboShader->use();
+	fboShader->setUniformFloat("time", time);
+	fboShader->setUniformVec2("screenSize", screenSize);
+
+	glBindVertexArray(0);
+	glEnableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+	glBindTexture(GL_TEXTURE_2D, texId);
+	glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * 4, &verts[0]);
+	glDrawArrays(GL_QUADS, 0, verts.size());
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisableVertexAttribArray(0);
+	*/
 	glUseProgram(0);
 }
 
