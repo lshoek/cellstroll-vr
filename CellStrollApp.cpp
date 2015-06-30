@@ -35,7 +35,7 @@ void CellStrollApp::init(void)
 	handTexture = sliceTexture;
 
 	//MODELS
-	cell_model = CaveLib::loadModel("data/CellStroll/models/AnimallCellNew.obj", new ModelLoadOptions(10.0f));
+	cell_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(10.0f));
 	hand_model = CaveLib::loadModel("data/CellStroll/models/hand.obj", new ModelLoadOptions(3.0f));
 	air_model = CaveLib::loadModel("data/CellStroll/models/sphere2.obj", new ModelLoadOptions(100.0f));
 	pointer_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(0.25f));
@@ -68,11 +68,13 @@ void CellStrollApp::init(void)
 
 	//FBO
 	glGenTextures(1, &fbo.texID);
-	glGenTextures(1, &fbo.byteDataTexID);
 	glBindTexture(GL_TEXTURE_2D, fbo.texID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenSize.x, screenSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glGenTextures(1, &fbo.byteDataTexID);
 	glBindTexture(GL_TEXTURE_2D, fbo.byteDataTexID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -82,7 +84,6 @@ void CellStrollApp::init(void)
 	glGenRenderbuffers(1, &fbo.rboID);
 	glBindRenderbuffer(GL_RENDERBUFFER, fbo.rboID);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, screenSize.x, screenSize.y);
-	glBindRenderbuffer(GL_RENDERBUFFER, fbo.rboID);
 
 	glGenFramebuffers(1, &fbo.fboID);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo.fboID);
@@ -178,6 +179,8 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo.fboID);
+	GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, buffers);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 	// DRAW HAND
@@ -195,7 +198,6 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, cellTexture->tid());
 	cellShader->setUniformInt("s_texture", 0);
-	cellShader->setUniformInt("s_normals", 1);
 	cellShader->setUniformMatrix4("modelMatrix", cellMm);
 	cellShader->setUniformMatrix4("modelViewMatrix", cellMvm);
 	cellShader->setUniformMatrix4("projectionMatrix", projectionMatrix);
@@ -252,11 +254,9 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		glDisableVertexAttribArray(0);
 		*/
 	}
-
-	//FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	//glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+	//FBO
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
@@ -266,20 +266,28 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	verts.push_back(glm::vec2(1, 1));
 	verts.push_back(glm::vec2(-1, 1));
 
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo.fboID);
 	fboShader->use();
-	fboShader->setUniformFloat("time", time);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, fbo.texID);
+	fboShader->setUniformInt("screenTexture", 0);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, fbo.byteDataTexID);
+	fboShader->setUniformInt("byteDataTexture", 1);
 	fboShader->setUniformVec2("screenSize", screenSize);
-
 	glBindVertexArray(0);
 	glEnableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
-
-	glBindTexture(GL_TEXTURE_2D, fbo.texID);
 	glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * 4, &verts[0]);
 	glDrawArrays(GL_QUADS, 0, verts.size());
 
+	//glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo.fboID);
+	//glReadBuffer(GL_COLOR_ATTACHMENT0);
+	//glBlitFramebuffer(0, 0, screenSize.x, screenSize.y, 0, 0, screenSize.x, screenSize.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
 	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDisableVertexAttribArray(0);
 	glUseProgram(0);
 }
