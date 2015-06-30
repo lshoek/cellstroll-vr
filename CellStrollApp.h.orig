@@ -37,44 +37,31 @@ class CellStrollApp : public Application
 			glm::vec3 point;
 			glm::vec3 normal;
 		};
-		struct FrameBufferObject
-		{
-			GLuint fboID;
-			GLuint rboID;
-			GLuint texID;
-			GLuint byteDataTexID;
-		};
 		LeapData leapData;
 		LeapListener leapListener;
 		Leap::Controller controller;
-		PositionalDevice positionalDeviceCamera;
-		ShaderProgram *handShader, *pointerShader, *cellShader, *airShader, *fboShader;
+		PositionalDevice simHead, simCamera;
+		ShaderProgram *simpleShader, *cellShader, *airShader;
 		GLuint lineShader;
 		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture, *fistTexture, *normalmap_a;
-		cModel *hand_model, *cell_model, *air_model, *pointer_model,*punaise_model;
-		// AnimalCell models
-		cModel *centriole_model, *nucleolos_model, *flagellum_model, *golgi_model, *cytoplasm_model, *lysosome_model, *nucleus_model, *mitochondrion_model,
-			*nuclearMembrane_model, *cellMembrane_model, *peroxisome_model, *reticulum_model, *filament_model;
-
+		cModel *hand_model, *cell_model, *cube_model, *pointer_model;
 		Light pointLight;
 		Plane clippingPlane;
-		FrameBufferObject fbo;
 		clock_t clock_start;
-		glm::vec2 screenSize;
-		glm::vec3 center, cPlane;
+		glm::vec3 cPlane;
 		Label partLabel = Label("Nothing selected!");
-		cFont* font = new cFont("Tahoma");
-		float cellScale;
+		float xScale, yScale, zScale;
 
 	public:
-		enum ViewConfig { OCULUS_VIEW, SIMULATION_VIEW };
 		CellStrollApp(void);
 		~CellStrollApp(void);
 		virtual void init();
 		virtual void preFrame(double, double);
 		virtual void draw(const glm::mat4 &, const glm::mat4 &);
-		glm::vec3 extractCameraPosition(const glm::mat4 &);
+		glm::vec3 extractCameraPosition(const glm::mat4&);
+<<<<<<< HEAD
+=======
+		glm::vec3 rescaledPalmPosition(glm::vec3 fingerPos);
 		void displayText(int x, int y, std::string string);
-		void drawBitmapText(std::string caption, int score, float r, float g, float b,float x, float y, float z);
-		void setPositionalDevice(ViewConfig);
+>>>>>>> c89d21030d1228a912d39a1a77798cf577a4c5ec
 };

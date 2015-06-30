@@ -54,8 +54,48 @@ inline bool sphereCollision(glm::vec3 pointer, glm::vec3 sphereCenter, GLfloat s
 {
 	glm::vec3 diff = pointer - sphereCenter;
 	GLfloat distance = glm::sqrt(diff.x * diff.x + diff.y * diff.y + diff.z*diff.z);
-	std::cout << distance << "\n";
 	if (distance < sphereRadius)
 		return true;
 	return false;
+}
+
+static void fb_status(const char *where)
+{
+	switch (glCheckFramebufferStatus(GL_FRAMEBUFFER)) {
+	case GL_FRAMEBUFFER_COMPLETE:
+		printf(" :: GL_FRAMEBUFFER_COMPLETE in %s\n", where);
+		break;
+
+	case GL_FRAMEBUFFER_UNDEFINED:
+		printf(" :: GL_FRAMEBUFFER_UNDEFINED in %s\n", where);
+		break;
+
+	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+		printf(" :: GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT in %s\n", where);
+		break;
+
+	case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+		printf(" :: GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT in %s\n", where);
+		break;
+
+	case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+		printf(" :: GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER in %s\n", where);
+		break;
+
+	case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+		printf(" :: GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER in %s\n", where);
+		break;
+
+	case GL_FRAMEBUFFER_UNSUPPORTED:
+		printf(" :: GL_FRAMEBUFFER_UNSUPPORTED in %s\n", where);
+		break;
+
+	case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+		printf(" :: GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE in %s\n", where);
+		break;
+
+	case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+		printf(" :: GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS in %s\n", where);
+		break;
+	}
 }
