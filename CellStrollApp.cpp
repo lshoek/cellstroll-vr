@@ -26,7 +26,7 @@ void CellStrollApp::init(void)
 	clippingPlane.point = glm::vec3(100.0f, 0.0f, 0.0f);
 	clippingPlane.normal = glm::vec3(0.0f, -1.0f, 0.0f);
 
-	// TEXTURES
+	//TEXTURES
 	cellTexture = CaveLib::loadTexture("data/CellStroll/models/CoreTextureNew.png", new TextureLoadOptions(GL_FALSE));
 	sliceTexture = CaveLib::loadTexture("data/CellStroll/models/hand.png", new TextureLoadOptions(GL_FALSE));
 	fingerTexture = CaveLib::loadTexture("data/CellStroll/models/finger.png", new TextureLoadOptions(GL_FALSE));
@@ -42,8 +42,11 @@ void CellStrollApp::init(void)
 	printf("vertices cell: %f %f %f", cell_model->getVertices()[0], cell_model->getVertices()[1], cell_model->getVertices()[2]);
 
 	//SHADERS
-	simpleShader = new ShaderProgram("data/CellStroll/shaders/simple.vert", "data/CellStroll/shaders/simple.frag");
-	simpleShader->link();
+	handShader = new ShaderProgram("data/CellStroll/shaders/hand.vert", "data/CellStroll/shaders/hand.frag");
+	handShader->link();
+
+	pointerShader = new ShaderProgram("data/CellStroll/shaders/pointer.vert", "data/CellStroll/shaders/pointer.frag");
+	pointerShader->link();
 
 	cellShader = new ShaderProgram("data/CellStroll/shaders/cell.vert", "data/CellStroll/shaders/cell.frag");
 	cellShader->link();
@@ -61,8 +64,34 @@ void CellStrollApp::init(void)
 	controller.addListener(leapListener);
 	leapListener.setLeapData(&leapData);
 	leapListener.onInit(controller);
-
 	leapData.handDifference = -2;
+
+	//FBO
+	glGenTextures(1, &fbo.texID);
+	glGenTextures(1, &fbo.byteDataTexID);
+	glBindTexture(GL_TEXTURE_2D, fbo.texID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenSize.x, screenSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glBindTexture(GL_TEXTURE_2D, fbo.byteDataTexID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenSize.x, screenSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glGenRenderbuffers(1, &fbo.rboID);
+	glBindRenderbuffer(GL_RENDERBUFFER, fbo.rboID);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, screenSize.x, screenSize.y);
+	glBindRenderbuffer(GL_RENDERBUFFER, fbo.rboID);
+
+	glGenFramebuffers(1, &fbo.fboID);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo.fboID);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo.texID, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, fbo.byteDataTexID, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo.rboID);
+	fb_status("x");
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void CellStrollApp::preFrame(double, double totalTime)
@@ -90,6 +119,7 @@ void CellStrollApp::displayText(int x, int y, std::string string)
 void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &modelViewMatrix)
 {
 	// CONFIGS
+	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_COLOR_MATERIAL);
 
 	// UPDATES
@@ -104,8 +134,9 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glm::mat4 cellMm = glm::translate(glm::mat4(), center);
 
 	// GESTURES
-	glm::mat4 rotMat = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
-	pointerMvp *= glm::inverse(rotMat);
+	glm::mat4 rotMatNormal = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
+	glm::mat4 rotMatDir = glm::orientation(glm::vec3(0.0f, 0.0f, -1.0f), leapData.direction);
+	pointerMvp *= glm::inverse(rotMatDir * rotMatNormal);
 
 	if (leapListener.getHandMode() == LeapListener::HANDMODE_SLICE)
 	{
@@ -116,7 +147,6 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	}
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_FINGER)
 	{
-		rotMat *= glm::orientation(glm::vec3(0.0f, 0.0f, -1.0f), leapData.direction);
 		cellMm *= glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.tempPalmPosition));
 
 		// DRAW POINTER LINE
@@ -140,43 +170,30 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_ZOOM)
 	{
 		if (leapData.handDifference / 50 - 2 >= 0 && leapData.handDifference / 50 - 2 <= 8)
-		{
-			xScale = (leapData.handDifference / 50 - 2);
-			yScale = (leapData.handDifference / 50 - 2);
-			zScale = (leapData.handDifference / 50 - 2);
-		}
+			cellScale = (leapData.handDifference / 50 - 2);
 	}
 
-	// SCALING OF THE CELL
-	cellMm = glm::scale(cellMm, glm::vec3(xScale, yScale, zScale));
+	// SCALE CELL
+	cellMm = glm::scale(cellMm, glm::vec3(cellScale));
 	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo.fboID);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
 	// DRAW HAND
-	simpleShader->use();
-	glEnable(GL_TEXTURE_2D);
+	handShader->use();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, handTexture->tid());
-	simpleShader->setUniformInt("s_texture", 0);
-	simpleShader->setUniformMatrix4("modelViewProjectionMatrix", pointerMvp);
-	simpleShader->setUniformVec3("light.position", pointLight.position);
-	simpleShader->setUniformVec3("light.intensities", pointLight.intensities);
-	simpleShader->setUniformFloat("light.attenuation", pointLight.attentuation);
-	simpleShader->setUniformFloat("light.ambientCoefficient", pointLight.ambientCoefficient);
-	simpleShader->setUniformFloat("time", time);
-	simpleShader->setUniformBool("isRight", leapData.isRight);
-	simpleShader->setUniformBool("texEnabled", true);
-	simpleShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
-	simpleShader->setUniformFloat("materialShininess", 5.0f);
-	simpleShader->setUniformVec3("cameraPosition", extractCameraPosition(positionalDeviceCamera.getData()));
-	hand_model->draw(simpleShader);
-
+	handShader->setUniformInt("s_texture", 0);
+	handShader->setUniformMatrix4("modelViewProjectionMatrix", pointerMvp);
+	handShader->setUniformBool("isRight", leapData.isRight);
+	hand_model->draw(handShader);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
 	// DRAW CELL
 	cellShader->use();
-	glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, cellTexture->tid());
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, normalmap_a->tid());
 	cellShader->setUniformInt("s_texture", 0);
 	cellShader->setUniformInt("s_normals", 1);
 	cellShader->setUniformMatrix4("modelMatrix", cellMm);
@@ -194,21 +211,23 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	cellShader->setUniformFloat("materialShininess", 5.0f);
 	cellShader->setUniformVec3("cameraPosition", extractCameraPosition(positionalDeviceCamera.getData()));
 	cell_model->draw(cellShader);
-
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
 	// DRAW AIR
 	airShader->use();
 	airShader->setUniformFloat("time", time);
 	airShader->setUniformMatrix4("modelViewProjectionMatrix", glm::rotate(mvp, 90.0f, glm::vec3(0.0f, 1.0f, 0.0f)));
 	air_model->draw(airShader);
 
-	// LINE
 	if (leapListener.getHandMode() == LeapListener::HANDMODE_FINGER)
 	{
-		simpleShader->use();
-		simpleShader->setUniformMatrix4("modelViewProjectionMatrix", pointerDirectionMvp);
-		simpleShader->setUniformBool("texEnabled", false);
-		pointer_model->draw(simpleShader);
+		// DRAW POINTER
+		pointerShader->use();
+		pointerShader->setUniformMatrix4("modelViewProjectionMatrix", pointerDirectionMvp);
+		pointer_model->draw(pointerShader);
 
+		/*
+		// DRAWING LINE BETWEEN HAND AND POINTER
 		glUseProgram(lineShader);
 		GLuint vertexArray, vertexBuffer;
 
@@ -231,31 +250,13 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		glLineWidth(3.0f);
 		glDrawArrays(GL_LINES, 0, 2);
 		glDisableVertexAttribArray(0);
+		*/
 	}
 
 	//FBO
-	/*
-	GLuint fbo = 0;
-	GLuint rbo = 0;
-	GLuint texId = 0;
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glGenTextures(1, &texId);
-	glBindTexture(GL_TEXTURE_2D, texId);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenSize.x, screenSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texId, 0);
-	glGenRenderbuffers(1, &rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, screenSize.x, screenSize.y);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-	GLint viewport[4];
-	glGetIntegerv(GL_VIEWPORT, viewport);
-	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+	//glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
@@ -273,12 +274,13 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glEnableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
-	glBindTexture(GL_TEXTURE_2D, texId);
+
+	glBindTexture(GL_TEXTURE_2D, fbo.texID);
 	glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * 4, &verts[0]);
 	glDrawArrays(GL_QUADS, 0, verts.size());
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glDisableVertexAttribArray(0);
-	*/
 	glUseProgram(0);
 }
 
