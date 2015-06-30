@@ -32,10 +32,45 @@ void CellStrollApp::init(void)
 	handTexture = sliceTexture;
 
 	//MODELS
+	// Animall models
+	centriole_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/centriole.obj");
+	printf("Loaded centriole model\n");
+	nucleolos_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/core.obj");
+	printf("Loaded nucleolos model\n");
+	flagellum_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/flagellum.obj");
+	printf("Loaded flagellum model\n");
+	golgi_model				= CaveLib::loadModel("data/CellStroll/models/AnimalCell/golgi.obj");
+	printf("Loaded golgi model\n");
+	cytoplasm_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/liquidLayer.obj");
+	printf("Loaded cytoplasm model\n");
+	lysosome_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/lysosome.obj");
+	printf("Loaded lysosome model\n");
+	nucleus_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/middleCore.obj");
+	printf("Loaded nucleus model\n");
+	mitochondrion_model		= CaveLib::loadModel("data/CellStroll/models/AnimalCell/mitochondrion.obj");
+	printf("Loaded mitochondrion model\n");
+	nuclearMembrane_model	= CaveLib::loadModel("data/CellStroll/models/AnimalCell/outerCore.obj");
+	printf("Loaded nuclear membrane model\n");
+	cellMembrane_model		= CaveLib::loadModel("data/CellStroll/models/AnimalCell/outerLayer.obj");
+	printf("Loaded cell membrane model\n");
+	peroxisome_model		= CaveLib::loadModel("data/CellStroll/models/AnimalCell/peroxisome.obj");
+	printf("Loaded peroxisome model\n");
+	reticulum_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/reticulum.obj");
+	printf("Loaded reticulum model\n");
+	filament_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/bezier.obj");
+	printf("Loaded filament model\n");
+
+	// Other models
+	//cell_model = CaveLib::loadModel("data/CellStroll/models/animallcellnew.obj", new ModelLoadOptions(10.0f));
 	hand_model = CaveLib::loadModel("data/CellStroll/models/hand.obj", new ModelLoadOptions(3.0f));
-	cube_model = CaveLib::loadModel("data/CellStroll/models/cube.obj", new ModelLoadOptions(100.0f));
+	printf("Loaded hand\n");
+	cube_model = CaveLib::loadModel("data/CellStroll/models/cube.obj", new ModelLoadOptions(1000.0f));
+	printf("Loaded surroundings\n");
 	pointer_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(0.25f));
-	printf("vertices cell: %f %f %f", cell_model->getVertices()[0], cell_model->getVertices()[1], cell_model->getVertices()[2]);
+	printf("Loaded pointer\n");
+	punaise_model = CaveLib::loadModel("data/CellStroll/models/punaise.obj", new ModelLoadOptions(250.0f));
+	printf("Loaded punaise model\n");
+	//printf("vertices cell: %f %f %f", cell_model->getVertices()[0], cell_model->getVertices()[1], cell_model->getVertices()[2]);
 
 	//SHADERS
 	simpleShader = new ShaderProgram("data/CellStroll/shaders/simple.vert", "data/CellStroll/shaders/simple.frag");
@@ -56,6 +91,10 @@ void CellStrollApp::init(void)
 	leapListener.onInit(controller);
 
 	leapData.handDifference = -2;
+
+	partLabel.height = 0.5;
+	partLabel.width = 1;
+	partLabel.setFont(font);
 }
 
 void CellStrollApp::preFrame(double, double totalTime)
@@ -68,16 +107,26 @@ void CellStrollApp::preFrame(double, double totalTime)
 // SHOWING TEXT ON THE SCREEN
 void CellStrollApp::displayText(int x, int y, std::string string)
 {
-	cFont* font = new cFont("Tahoma");
+	glTranslatef(2, 0, 0);
+	glRotatef(-45, 0, 1, 0);
+	glTranslatef(0, -1, -1);
 	partLabel.text = string;
-	partLabel.height = 1;
-	partLabel.width = 2;
-	partLabel.setFont(font);
 	//glTranslatef(x, y, 0);
 	partLabel.x = x;
 	partLabel.y = y;
-	partLabel.render(0.0f);
-	//partLabel.drawBox(x, y, 0, 2, 1, 1);
+	partLabel.render(2.0f);
+}
+
+void CellStrollApp::drawBitmapText(std::string caption, int score, float r, float g, float b,float x, float y, float z) 
+{
+	glColor3f(r, g, b);
+	glRasterPos3f(x, y, z);
+	std::stringstream strm;
+	strm << caption << score;
+	std::string text = strm.str();
+	for (std::string::iterator it = text.begin(); it != text.end(); ++it) {
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, *it);
+	}
 }
 
 void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &modelViewMatrix)
@@ -125,6 +174,9 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		pointerDirectionMvp = glm::translate(mvp, leapData.getPointer());
 		collision = sphereCollision(leapData.getPointer(), glm::vec3(0.0f, 0.0f, 0.0f), 4.0f);
 		handTexture = fingerTexture;
+
+		std::string bleh = "Mooie tekst";
+		displayText(1, 0, bleh);
 	}
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_FIST)
 	{
@@ -168,6 +220,9 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	simpleShader->setUniformVec3("cameraPosition", extractCameraPosition(simCamera.getData()));
 	hand_model->draw(simpleShader);
 
+	//DRAW PUNAISE
+	// hier komen de instellingen voor het tekenen van de punaise
+
 	// DRAW CELL
 	cellShader->use();
 	glEnable(GL_TEXTURE_2D);
@@ -191,7 +246,19 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	cellShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
 	cellShader->setUniformFloat("materialShininess", 5.0f);
 	cellShader->setUniformVec3("cameraPosition", extractCameraPosition(simCamera.getData()));
-	cell_model->draw(cellShader);
+	centriole_model->		draw(cellShader);
+	nucleolos_model->		draw(cellShader);
+	flagellum_model->		draw(cellShader);
+	golgi_model->			draw(cellShader);
+	cytoplasm_model->		draw(cellShader);
+	lysosome_model->		draw(cellShader);
+	nucleus_model->			draw(cellShader);
+	mitochondrion_model->	draw(cellShader);
+	nuclearMembrane_model->	draw(cellShader);
+	cellMembrane_model->	draw(cellShader);
+	peroxisome_model->		draw(cellShader);
+	reticulum_model->		draw(cellShader);
+	filament_model->		draw(cellShader);
 
 	// DRAW AIR
 	airShader->use();

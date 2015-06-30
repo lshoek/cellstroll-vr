@@ -44,13 +44,17 @@ class CellStrollApp : public Application
 		ShaderProgram *simpleShader, *cellShader, *airShader;
 		GLuint lineShader;
 		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture, *fistTexture, *normalmap_a;
-		cModel *hand_model, *cell_model, *cube_model, *pointer_model;
+		cModel *hand_model, *cell_model, *cube_model, *pointer_model, *punaise_model;
+		// AnimalCell models
+		cModel *centriole_model, *nucleolos_model, *flagellum_model, *golgi_model, *cytoplasm_model, *lysosome_model, *nucleus_model, *mitochondrion_model,
+			*nuclearMembrane_model, *cellMembrane_model, *peroxisome_model, *reticulum_model, *filament_model;
 		Light pointLight;
 		Plane clippingPlane;
 		clock_t clock_start;
 		glm::vec3 cPlane;
 		Label partLabel = Label("Nothing selected!");
 		float xScale, yScale, zScale;
+		cFont* font = new cFont("Tahoma");
 
 	public:
 		CellStrollApp(void);
@@ -60,4 +64,5 @@ class CellStrollApp : public Application
 		virtual void draw(const glm::mat4 &, const glm::mat4 &);
 		glm::vec3 extractCameraPosition(const glm::mat4&);
 		void displayText(int x, int y, std::string string);
+		void drawBitmapText(std::string caption, int score, float r, float g, float b,float x, float y, float z);
 };
