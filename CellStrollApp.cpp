@@ -346,6 +346,7 @@ void CellStrollApp::loadTextures()
 	sliceTexture = CaveLib::loadTexture("data/CellStroll/models/hand.png", new TextureLoadOptions(GL_FALSE));
 	fingerTexture = CaveLib::loadTexture("data/CellStroll/models/finger.png", new TextureLoadOptions(GL_FALSE));
 	fistTexture = CaveLib::loadTexture("data/CellStroll/models/fist.png", new TextureLoadOptions(GL_FALSE));
+	punaiseTexture = CaveLib::loadTexture("data/CellStroll/models/punaiseTexture.png", new TextureLoadOptions(GL_FALSE));
 	normalmap_a = CaveLib::loadTexture("data/CellStroll/textures/normalmap3.png", new TextureLoadOptions(GL_FALSE));
 	handTexture = sliceTexture;
 }
@@ -407,6 +408,6 @@ void CellStrollApp::loadShaders()
 	airShader		->link();
 	fboShader		->link();
 	defaultfbShader	->link();
-	punaiseShader->link();
+	punaiseShader	->link();
 	glLinkProgram(lineShader);
 }

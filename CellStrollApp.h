@@ -44,20 +44,19 @@ class CellStrollApp : public Application
 			GLuint texID;
 			GLuint byteDataTexID;
 		};
+		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture,
+			*fistTexture, *normalmap_a, *punaiseTexture;
+		cModel	*hand_model, *cell_model, *air_model, *pointer_model, *punaise_model;
+		cModel	*centriole_model, *nucleolos_model, *flagellum_model, *golgi_model,
+			*cytoplasm_model, *lysosome_model, *nucleus_model, *mitochondrion_model,
+			*nuclearMembrane_model, *cellMembrane_model, *peroxisome_model, 
+			*reticulum_model, *filament_model;
 		LeapData leapData;
 		LeapListener leapListener;
 		Leap::Controller controller;
 		PositionalDevice positionalDeviceCamera;
-		ShaderProgram *handShader, *pointerShader, *cellShader, *airShader, *fboShader, *punaiseShader;
-		ShaderProgram *handShader, *pointerShader, *cellShader, *airShader, *fboShader, *defaultfbShader;
 		GLuint lineShader;
-
-		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture, *fistTexture, *normalmap_a, *punaiseTexture, , *defaultfbShader;
-		cModel *hand_model, *cell_model, *air_model, *pointer_model,*punaise_model;
-		// AnimalCell models
-		cModel *centriole_model, *nucleolos_model, *flagellum_model, *golgi_model, *cytoplasm_model, *lysosome_model, *nucleus_model, *mitochondrion_model,
-			*nuclearMembrane_model, *cellMembrane_model, *peroxisome_model, *reticulum_model, *filament_model;
-
+		ShaderProgram *handShader, *pointerShader, *cellShader, *airShader, *fboShader, *punaiseShader, *defaultfbShader;
 		Light pointLight;
 		Plane clippingPlane;
 		FrameBufferObject fbo;
