@@ -32,6 +32,7 @@ void CellStrollApp::init(void)
 	fingerTexture = CaveLib::loadTexture("data/CellStroll/models/finger.png", new TextureLoadOptions(GL_FALSE));
 	fistTexture = CaveLib::loadTexture("data/CellStroll/models/fist.png", new TextureLoadOptions(GL_FALSE));
 	normalmap_a = CaveLib::loadTexture("data/CellStroll/textures/normalmap3.png", new TextureLoadOptions(GL_FALSE));
+	punaiseTexture = CaveLib::loadTexture("data/CellStroll/models/punaiseTexture.png", new TextureLoadOptions(GL_FALSE));
 	handTexture = sliceTexture;
 
 	//MODELS
@@ -68,11 +69,11 @@ void CellStrollApp::init(void)
 	//cell_model = CaveLib::loadModel("data/CellStroll/models/animallcellnew.obj", new ModelLoadOptions(10.0f));
 	hand_model = CaveLib::loadModel("data/CellStroll/models/hand.obj", new ModelLoadOptions(3.0f));
 	printf("Loaded hand\n");
-	air_model = CaveLib::loadModel("data/CellStroll/models/sphere2.obj", new ModelLoadOptions(100.0f));
+	air_model = CaveLib::loadModel("data/CellStroll/models/sphere2.obj", new ModelLoadOptions(1500.0f));
 	printf("Loaded surroundings\n");
 	pointer_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(0.25f));
 	printf("Loaded pointer\n");
-	punaise_model = CaveLib::loadModel("data/CellStroll/models/punaise.obj", new ModelLoadOptions(250.0f));
+	punaise_model = CaveLib::loadModel("data/CellStroll/models/punaise.obj");
 	printf("Loaded punaise model\n");
 	//printf("vertices cell: %f %f %f", cell_model->getVertices()[0], cell_model->getVertices()[1], cell_model->getVertices()[2]);
 
@@ -94,6 +95,9 @@ void CellStrollApp::init(void)
 
 	lineShader = createShaderProgram("data/CellStroll/shaders/line.vert", "data/CellStroll/shaders/line.frag");
 	glLinkProgram(lineShader);
+
+	punaiseShader = new ShaderProgram("data/CellStroll/shaders/punaise.vert", "data/CellStroll/shaders/punaise.frag");
+	punaiseShader->link();
 
 	//LEAP
 	controller.addListener(leapListener);
@@ -181,6 +185,7 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glm::mat4 pointerMvp = glm::translate(mvp, LeapData::rescale(leapData.palmPosition));
 	glm::mat4 pointerDirectionMvp;
 	glm::mat4 cellMm = glm::translate(glm::mat4(), center);
+	glm::mat4 punaiseMm = glm::translate(glm::mat4(), glm::vec3(-250, 0, 0));
 
 	// GESTURES
 	glm::mat4 rotMatNormal = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
@@ -189,7 +194,7 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 
 	if (leapListener.getHandMode() == LeapListener::HANDMODE_SLICE)
 	{
-		cellMm *= glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.tempPalmPosition));
+		cellMm *= glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.tempPalmPosition)); // Waarom -1.0f op de y-as?
 		clippingPlane.point = LeapData::rescale(leapData.palmPosition);
 		clippingPlane.normal = leapData.palmNormal;
 		handTexture = sliceTexture;
@@ -229,6 +234,11 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	cellMm = glm::scale(cellMm, glm::vec3(cellScale));
 	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 
+	// SCALE PUNAISE
+	punaiseMm = glm::scale(punaiseMm, glm::vec3(250));
+	punaiseMm = glm::scale(punaiseMm, glm::vec3(cellScale));
+	glm::mat4 punaiseMvm = modelViewMatrix * punaiseMm;
+
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo.fboID);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
@@ -243,7 +253,24 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glBindTexture(GL_TEXTURE_2D, 0);
 	
 	//DRAW PUNAISE
-	// hier komen de instellingen voor het tekenen van de punaise
+	punaiseShader->use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, punaiseTexture->tid());
+	punaiseShader->setUniformInt("s_texture", 0);
+	punaiseShader->setUniformInt("s_normals", 1);
+	punaiseShader->setUniformMatrix4("modelMatrix", punaiseMm);
+	punaiseShader->setUniformMatrix4("modelViewMatrix", punaiseMvm);
+	punaiseShader->setUniformMatrix4("projectionMatrix", projectionMatrix);
+	punaiseShader->setUniformVec3("light.position", pointLight.position);
+	punaiseShader->setUniformVec3("light.intensities", pointLight.intensities);
+	punaiseShader->setUniformFloat("light.attenuation", pointLight.attentuation);
+	punaiseShader->setUniformFloat("light.ambientCoefficient", pointLight.ambientCoefficient);
+	punaiseShader->setUniformFloat("time", time);
+	punaiseShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
+	punaiseShader->setUniformFloat("materialShininess", 5.0f);
+	punaiseShader->setUniformVec3("cameraPosition", extractCameraPosition(positionalDeviceCamera.getData()));
+	punaise_model->draw(punaiseShader);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// DRAW CELL
 	cellShader->use();

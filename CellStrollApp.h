@@ -48,9 +48,9 @@ class CellStrollApp : public Application
 		LeapListener leapListener;
 		Leap::Controller controller;
 		PositionalDevice positionalDeviceCamera;
-		ShaderProgram *handShader, *pointerShader, *cellShader, *airShader, *fboShader;
+		ShaderProgram *handShader, *pointerShader, *cellShader, *airShader, *fboShader, *punaiseShader;
 		GLuint lineShader;
-		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture, *fistTexture, *normalmap_a;
+		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture, *fistTexture, *normalmap_a, *punaiseTexture;
 		cModel *hand_model, *cell_model, *air_model, *pointer_model,*punaise_model;
 		// AnimalCell models
 		cModel *centriole_model, *nucleolos_model, *flagellum_model, *golgi_model, *cytoplasm_model, *lysosome_model, *nucleus_model, *mitochondrion_model,
@@ -64,7 +64,7 @@ class CellStrollApp : public Application
 		glm::vec3 center, cPlane;
 		Label partLabel = Label("Nothing selected!");
 		cFont* font = new cFont("Tahoma");
-		float cellScale;
+		float cellScale = 1.0f;
 
 	public:
 		enum ViewConfig { OCULUS_VIEW, SIMULATION_VIEW };
