@@ -26,80 +26,16 @@ void CellStrollApp::init(void)
 	clippingPlane.point = glm::vec3(100.0f, 0.0f, 0.0f);
 	clippingPlane.normal = glm::vec3(0.0f, -1.0f, 0.0f);
 
-	//TEXTURES
-	cellTexture = CaveLib::loadTexture("data/CellStroll/models/CoreTextureNew.png", new TextureLoadOptions(GL_FALSE));
-	sliceTexture = CaveLib::loadTexture("data/CellStroll/models/hand.png", new TextureLoadOptions(GL_FALSE));
-	fingerTexture = CaveLib::loadTexture("data/CellStroll/models/finger.png", new TextureLoadOptions(GL_FALSE));
-	fistTexture = CaveLib::loadTexture("data/CellStroll/models/fist.png", new TextureLoadOptions(GL_FALSE));
-	normalmap_a = CaveLib::loadTexture("data/CellStroll/textures/normalmap3.png", new TextureLoadOptions(GL_FALSE));
-	handTexture = sliceTexture;
-
-	//MODELS
-
-	// Animall models
-	centriole_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/centriole.obj");
-	printf("Loaded centriole model\n");
-	nucleolos_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/core.obj");
-	printf("Loaded nucleolos model\n");
-	flagellum_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/flagellum.obj");
-	printf("Loaded flagellum model\n");
-	golgi_model				= CaveLib::loadModel("data/CellStroll/models/AnimalCell/golgi.obj");
-	printf("Loaded golgi model\n");
-	cytoplasm_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/liquidLayer.obj");
-	printf("Loaded cytoplasm model\n");
-	lysosome_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/lysosome.obj");
-	printf("Loaded lysosome model\n");
-	nucleus_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/middleCore.obj");
-	printf("Loaded nucleus model\n");
-	mitochondrion_model		= CaveLib::loadModel("data/CellStroll/models/AnimalCell/mitochondrion.obj");
-	printf("Loaded mitochondrion model\n");
-	nuclearMembrane_model	= CaveLib::loadModel("data/CellStroll/models/AnimalCell/outerCore.obj");
-	printf("Loaded nuclear membrane model\n");
-	cellMembrane_model		= CaveLib::loadModel("data/CellStroll/models/AnimalCell/outerLayer.obj");
-	printf("Loaded cell membrane model\n");
-	peroxisome_model		= CaveLib::loadModel("data/CellStroll/models/AnimalCell/peroxisome.obj");
-	printf("Loaded peroxisome model\n");
-	reticulum_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/reticulum.obj");
-	printf("Loaded reticulum model\n");
-	filament_model			= CaveLib::loadModel("data/CellStroll/models/AnimalCell/bezier.obj");
-	printf("Loaded filament model\n");
-
-	// Other models
-	//cell_model = CaveLib::loadModel("data/CellStroll/models/animallcellnew.obj", new ModelLoadOptions(10.0f));
-	hand_model = CaveLib::loadModel("data/CellStroll/models/hand.obj", new ModelLoadOptions(3.0f));
-	printf("Loaded hand\n");
-	air_model = CaveLib::loadModel("data/CellStroll/models/sphere2.obj", new ModelLoadOptions(100.0f));
-	printf("Loaded surroundings\n");
-	pointer_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(0.25f));
-	printf("Loaded pointer\n");
-	punaise_model = CaveLib::loadModel("data/CellStroll/models/punaise.obj", new ModelLoadOptions(250.0f));
-	printf("Loaded punaise model\n");
-	//printf("vertices cell: %f %f %f", cell_model->getVertices()[0], cell_model->getVertices()[1], cell_model->getVertices()[2]);
-
-	//SHADERS
-	handShader = new ShaderProgram("data/CellStroll/shaders/hand.vert", "data/CellStroll/shaders/hand.frag");
-	handShader->link();
-
-	pointerShader = new ShaderProgram("data/CellStroll/shaders/pointer.vert", "data/CellStroll/shaders/pointer.frag");
-	pointerShader->link();
-
-	cellShader = new ShaderProgram("data/CellStroll/shaders/cell.vert", "data/CellStroll/shaders/cell.frag");
-	cellShader->link();
-
-	airShader = new ShaderProgram("data/CellStroll/shaders/air.vert", "data/CellStroll/shaders/air.frag");
-	airShader->link();
-
-	fboShader = new ShaderProgram("data/CellStroll/shaders/fbo.vert", "data/CellStroll/shaders/fbo.frag");
-	fboShader->link();
-
-	lineShader = createShaderProgram("data/CellStroll/shaders/line.vert", "data/CellStroll/shaders/line.frag");
-	glLinkProgram(lineShader);
-
 	//LEAP
 	controller.addListener(leapListener);
 	leapListener.setLeapData(&leapData);
 	leapListener.onInit(controller);
 	leapData.handDifference = -2;
+
+	//TEXTURES/MODELS/SHADERS
+	loadTextures();
+	loadModels();
+	loadShaders();
 
 	//FBO
 	glGenTextures(1, &fbo.texID);
@@ -126,6 +62,7 @@ void CellStrollApp::init(void)
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo.texID, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, fbo.byteDataTexID, 0);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo.rboID);
+
 	fb_status("x");
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -267,19 +204,19 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	cellShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
 	cellShader->setUniformFloat("materialShininess", 5.0f);
 	cellShader->setUniformVec3("cameraPosition", extractCameraPosition(positionalDeviceCamera.getData()));
-	centriole_model->		draw(cellShader);
-	nucleolos_model->		draw(cellShader);
-	flagellum_model->		draw(cellShader);
-	golgi_model->			draw(cellShader);
-	cytoplasm_model->		draw(cellShader);
-	lysosome_model->		draw(cellShader);
-	nucleus_model->			draw(cellShader);
-	mitochondrion_model->	draw(cellShader);
-	nuclearMembrane_model->	draw(cellShader);
-	cellMembrane_model->	draw(cellShader);
-	peroxisome_model->		draw(cellShader);
-	reticulum_model->		draw(cellShader);
-	filament_model->		draw(cellShader);
+	centriole_model			->draw(cellShader);
+	nucleolos_model			->draw(cellShader);
+	flagellum_model			->draw(cellShader);
+	golgi_model				->draw(cellShader);
+	cytoplasm_model			->draw(cellShader);
+	lysosome_model			->draw(cellShader);
+	nucleus_model			->draw(cellShader);
+	mitochondrion_model		->draw(cellShader);
+	nuclearMembrane_model	->draw(cellShader);
+	cellMembrane_model		->draw(cellShader);
+	peroxisome_model		->draw(cellShader);
+	reticulum_model			->draw(cellShader);
+	filament_model			->draw(cellShader);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	
 	// DRAW AIR
@@ -333,6 +270,7 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	verts.push_back(glm::vec2(1, 1));
 	verts.push_back(glm::vec2(-1, 1));
 
+	// DRAW TO FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo.fboID);
 	fboShader->use();
 	glActiveTexture(GL_TEXTURE0);
@@ -349,9 +287,19 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * 4, &verts[0]);
 	glDrawArrays(GL_QUADS, 0, verts.size());
 
-	//glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo.fboID);
-	//glReadBuffer(GL_COLOR_ATTACHMENT0);
-	//glBlitFramebuffer(0, 0, screenSize.x, screenSize.y, 0, 0, screenSize.x, screenSize.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	// DRAW TO SCREEN (DEFAULT FRAME BUFFER)
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	defaultfbShader->use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, fbo.texID);
+	fboShader->setUniformInt("screenTexture", 0);
+	fboShader->setUniformVec2("screenSize", screenSize);
+	glBindVertexArray(0);
+	glEnableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+	glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * 4, &verts[0]);
+	glDrawArrays(GL_QUADS, 0, verts.size());
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -367,9 +315,71 @@ void CellStrollApp::setPositionalDevice(ViewConfig config)
 		positionalDeviceCamera.init("CameraPosition");
 }
 
-glm::vec3 CellStrollApp::extractCameraPosition(const glm::mat4 &modelView)
+void CellStrollApp::loadTextures()
 {
-	glm::mat3 rotMat = glm::mat3(modelView);
-	glm::vec3 d(modelView[3]);
-	return -d * rotMat;
+	cellTexture = CaveLib::loadTexture("data/CellStroll/models/CoreTextureNew.png", new TextureLoadOptions(GL_FALSE));
+	sliceTexture = CaveLib::loadTexture("data/CellStroll/models/hand.png", new TextureLoadOptions(GL_FALSE));
+	fingerTexture = CaveLib::loadTexture("data/CellStroll/models/finger.png", new TextureLoadOptions(GL_FALSE));
+	fistTexture = CaveLib::loadTexture("data/CellStroll/models/fist.png", new TextureLoadOptions(GL_FALSE));
+	normalmap_a = CaveLib::loadTexture("data/CellStroll/textures/normalmap3.png", new TextureLoadOptions(GL_FALSE));
+	handTexture = sliceTexture;
+}
+
+void CellStrollApp::loadModels()
+{
+	// CELL
+	centriole_model = CaveLib::loadModel("data/CellStroll/models/AnimalCell/centriole.obj");
+	printf("Loaded centriole model\n");
+	nucleolos_model = CaveLib::loadModel("data/CellStroll/models/AnimalCell/core.obj");
+	printf("Loaded nucleolos model\n");
+	flagellum_model = CaveLib::loadModel("data/CellStroll/models/AnimalCell/flagellum.obj");
+	printf("Loaded flagellum model\n");
+	golgi_model = CaveLib::loadModel("data/CellStroll/models/AnimalCell/golgi.obj");
+	printf("Loaded golgi model\n");
+	cytoplasm_model = CaveLib::loadModel("data/CellStroll/models/AnimalCell/liquidLayer.obj");
+	printf("Loaded cytoplasm model\n");
+	lysosome_model = CaveLib::loadModel("data/CellStroll/models/AnimalCell/lysosome.obj");
+	printf("Loaded lysosome model\n");
+	nucleus_model = CaveLib::loadModel("data/CellStroll/models/AnimalCell/middleCore.obj");
+	printf("Loaded nucleus model\n");
+	mitochondrion_model = CaveLib::loadModel("data/CellStroll/models/AnimalCell/mitochondrion.obj");
+	printf("Loaded mitochondrion model\n");
+	nuclearMembrane_model = CaveLib::loadModel("data/CellStroll/models/AnimalCell/outerCore.obj");
+	printf("Loaded nuclear membrane model\n");
+	cellMembrane_model = CaveLib::loadModel("data/CellStroll/models/AnimalCell/outerLayer.obj");
+	printf("Loaded cell membrane model\n");
+	peroxisome_model = CaveLib::loadModel("data/CellStroll/models/AnimalCell/peroxisome.obj");
+	printf("Loaded peroxisome model\n");
+	reticulum_model = CaveLib::loadModel("data/CellStroll/models/AnimalCell/reticulum.obj");
+	printf("Loaded reticulum model\n");
+	filament_model = CaveLib::loadModel("data/CellStroll/models/AnimalCell/bezier.obj");
+	printf("Loaded filament model\n");
+
+	//ALL ELSE
+	hand_model = CaveLib::loadModel("data/CellStroll/models/hand.obj", new ModelLoadOptions(3.0f));
+	printf("Loaded hand\n");
+	air_model = CaveLib::loadModel("data/CellStroll/models/sphere2.obj", new ModelLoadOptions(100.0f));
+	printf("Loaded surroundings\n");
+	pointer_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(0.25f));
+	printf("Loaded pointer\n");
+	punaise_model = CaveLib::loadModel("data/CellStroll/models/punaise.obj", new ModelLoadOptions(250.0f));
+	printf("Loaded punaise model\n");
+}
+
+void CellStrollApp::loadShaders()
+{
+	handShader = new ShaderProgram("data/CellStroll/shaders/hand.vert", "data/CellStroll/shaders/hand.frag");
+	pointerShader = new ShaderProgram("data/CellStroll/shaders/pointer.vert", "data/CellStroll/shaders/pointer.frag");
+	cellShader = new ShaderProgram("data/CellStroll/shaders/cell.vert", "data/CellStroll/shaders/cell.frag");
+	airShader = new ShaderProgram("data/CellStroll/shaders/air.vert", "data/CellStroll/shaders/air.frag");
+	fboShader = new ShaderProgram("data/CellStroll/shaders/fbo.vert", "data/CellStroll/shaders/fbo.frag");
+	defaultfbShader = new ShaderProgram("data/CellStroll/shaders/defaultfb.vert", "data/CellStroll/shaders/defaultfb.frag");
+	lineShader = createShaderProgram("data/CellStroll/shaders/line.vert", "data/CellStroll/shaders/line.frag");
+	handShader		->link();
+	pointerShader	->link();	
+	cellShader		->link();
+	airShader		->link();
+	fboShader		->link();
+	defaultfbShader	->link();
+	glLinkProgram(lineShader);
 }

@@ -48,7 +48,7 @@ class CellStrollApp : public Application
 		LeapListener leapListener;
 		Leap::Controller controller;
 		PositionalDevice positionalDeviceCamera;
-		ShaderProgram *handShader, *pointerShader, *cellShader, *airShader, *fboShader;
+		ShaderProgram *handShader, *pointerShader, *cellShader, *airShader, *fboShader, *defaultfbShader;
 		GLuint lineShader;
 		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture, *fistTexture, *normalmap_a;
 		cModel *hand_model, *cell_model, *air_model, *pointer_model,*punaise_model;
@@ -70,10 +70,15 @@ class CellStrollApp : public Application
 		enum ViewConfig { OCULUS_VIEW, SIMULATION_VIEW };
 		CellStrollApp(void);
 		~CellStrollApp(void);
+
 		virtual void init();
 		virtual void preFrame(double, double);
 		virtual void draw(const glm::mat4 &, const glm::mat4 &);
-		glm::vec3 extractCameraPosition(const glm::mat4 &);
+
+		void loadTextures();
+		void loadModels();
+		void loadShaders();
+
 		void displayText(int x, int y, std::string string);
 		void drawBitmapText(std::string caption, int score, float r, float g, float b,float x, float y, float z);
 		void setPositionalDevice(ViewConfig);

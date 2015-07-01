@@ -59,6 +59,13 @@ inline bool sphereCollision(glm::vec3 pointer, glm::vec3 sphereCenter, GLfloat s
 	return false;
 }
 
+inline glm::vec3 extractCameraPosition(const glm::mat4 &modelView)
+{
+	glm::mat3 rotMat = glm::mat3(modelView);
+	glm::vec3 d(modelView[3]);
+	return -d * rotMat;
+}
+
 static void fb_status(const char *where)
 {
 	switch (glCheckFramebufferStatus(GL_FRAMEBUFFER)) {
