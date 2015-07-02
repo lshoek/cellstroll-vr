@@ -240,7 +240,7 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glm::mat4 pointerMvp = glm::translate(mvp, LeapData::rescale(leapData.palmPosition));
 	glm::mat4 pointerDirectionMvp;
 	glm::mat4 cellMm = glm::translate(glm::mat4(), center);
-	glm::mat4 punaiseMm = glm::translate(glm::mat4(), glm::vec3(-250, 0, 0));
+	glm::mat4 punaiseMm = glm::translate(glm::mat4(), glm::vec3(-500, 0, 0));
 
 	// GESTURES
 	glm::mat4 rotMatNormal = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
