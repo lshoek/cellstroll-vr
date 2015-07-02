@@ -26,6 +26,9 @@ void CellStrollApp::init(void)
 	clippingPlane.point = glm::vec3(100.0f, 0.0f, 0.0f);
 	clippingPlane.normal = glm::vec3(0.0f, -1.0f, 0.0f);
 
+    // Method i was working on in order to read data from a json file into an array
+	//fillInformationArray();
+
 	//LEAP
 	controller.addListener(leapListener);
 	leapListener.setLeapData(&leapData);
@@ -74,6 +77,105 @@ void CellStrollApp::init(void)
 	partLabel.height = 0.5;
 	partLabel.width = 1;
 	partLabel.setFont(font);
+
+	// code to write the information in the json file
+	std::ifstream cellPartFile("data/CellStroll/Json/cellParts.json");
+	std::ostringstream tmp;
+	tmp << cellPartFile.rdbuf();
+	std::string s = tmp.str();
+	std::cout << s << std::endl;
+}
+
+void CellStrollApp::displayInformationCellPart(int part)
+{
+	switch (part)
+	{
+	case 0:
+		drawText("Centriole / Centriolen", 22, 900, 600, 0);
+		break;
+	case 1:
+		drawText("Nucleolos / Kernlichaam", 23, 900, 600, 0);
+		break;
+	case 2:
+		drawText("Flagellum / Flagellum", 21, 900, 600, 0);
+		break;
+	case 3:
+		drawText("Golgi / Golgi-apparaat", 22, 900, 600, 0);
+		break;
+	case 4:
+		drawText("Cytoplasm / Cytoplasma", 22, 900, 600, 0);
+		break;
+	case 5:
+		drawText("Lysosome / Lysosoom", 19, 900, 600, 0);
+		break;
+	case 6:
+		drawText("Nucleus / Celkern", 17, 900, 600, 0);
+		break;
+	case 7:
+		drawText("Mitochondrion / Mitochondriën", 29, 900, 600, 0);
+		break;
+	case 8:
+		drawText("Nuclear Envelope / Nuclear Envelope", 35, 800, 600, 0);
+		break;
+	case 9:
+		drawText("Cell Membrane / Cel Membraan", 28, 900, 600, 0);
+		break;
+	case 10:
+		drawText("Peroxisome / Peroxisoom", 23, 900, 600, 0);
+		break;
+	case 11:
+		drawText("Endoplasmic Reticulum / Endoplasmatisch Reticulum", 49, 700, 600, 0);
+		break;
+	case 12:
+		drawText("Filament / Filament", 19, 900, 600, 0);
+		break;
+	default:
+		break;
+	}
+}
+
+void CellStrollApp::fillInformationArray()
+{
+	int bracketCounter = 0;
+	int accoladeCounter = 0;
+	char *tempName, *tempDescription, *tempNl;
+	Jzon::Object rootNode;
+	Jzon::FileReader::ReadFile("data/CellStroll/Json/cellParts.json", rootNode);
+	
+	for (Jzon::Object::iterator it = rootNode.begin(); it != rootNode.end(); ++it)
+	{
+		std::string name = (*it).first;
+		Jzon::Node &node = (*it).second;
+
+		std::cout << name << " = ";
+		if (node.IsValue())
+		{
+			if (name == "name")
+			{
+				for each (char c in node.ToString())
+				{
+					tempName += c;
+				}
+			}
+			else if (name == "description")
+			{
+				for each (char c in node.ToString())
+				{
+					tempDescription += c;
+				}
+			}
+			else if (name == "nl_name")
+			{
+				for each (char c in node.ToString())
+				{
+					tempNl += c;
+				}
+			}
+
+			std::cout << node.ToString();
+		}
+		std::cout << std::endl;
+	}
 }
 
 void CellStrollApp::preFrame(double, double totalTime)
@@ -83,7 +185,7 @@ void CellStrollApp::preFrame(double, double totalTime)
 	leapListener.setTimeDiff(timeFctr);
 }
 
-// SHOWING TEXT ON THE SCREEN
+// Draw text in the 3 dimensional space
 void CellStrollApp::displayText(int x, int y, std::string string)
 {
 	glTranslatef(2, 0, 0);
@@ -96,16 +198,28 @@ void CellStrollApp::displayText(int x, int y, std::string string)
 	partLabel.render(2.0f);
 }
 
-void CellStrollApp::drawBitmapText(std::string caption, int score, float r, float g, float b,float x, float y, float z) 
-{
-	glColor3f(r, g, b);
-	glRasterPos3f(x, y, z);
-	std::stringstream strm;
-	strm << caption << score;
-	std::string text = strm.str();
-	for (std::string::iterator it = text.begin(); it != text.end(); ++it) {
-		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, *it);
+// Draw text on the screen of the application
+void CellStrollApp::drawText(const char *text, int length, int x, int y, int z) {
+	glPushMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glColor3f(248/255, 248/255, 255/255);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0, 1280, 0, 720, -5, 5);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glPushMatrix();
+	glLoadIdentity();
+	glRasterPos3i(x, y, z);
+	for (int i = 0; i < length; i++) {
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, (int)text[i]);
+		//glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN, (int)text[i]);
 	}
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
 }
 
 void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &modelViewMatrix)
@@ -153,9 +267,6 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		pointerDirectionMvp *= glm::translate(mvp, leapData.getPointer());
 		isPointing = true;
 		handTexture = fingerTexture;
-
-		std::string bleh = "Mooie tekst";
-		displayText(1, 0, bleh);
 	}
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_FIST)
 	{
@@ -174,9 +285,9 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glm::mat4 cellMvm = modelViewMatrix * cellMm;
 
 	// SCALE PUNAISE
-	//punaiseMm = glm::scale(punaiseMm, glm::vec3(250.0f));
-	//punaiseMm = glm::scale(punaiseMm, glm::vec3(cellScale));
-	//glm::mat4 punaiseMvm = modelViewMatrix * punaiseMm;
+	punaiseMm = glm::scale(punaiseMm, glm::vec3(250.0f));
+	punaiseMm = glm::scale(punaiseMm, glm::vec3(cellScale));
+	glm::mat4 punaiseMvm = modelViewMatrix * punaiseMm;
 
 	GLint oldFbo;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &oldFbo);
@@ -229,21 +340,21 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	//DRAW PUNAISE
-	//punaiseShader->use();
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, punaiseTexture->tid());
-	//punaiseShader->setUniformInt("s_texture", 0);
-	//punaiseShader->setUniformMatrix4("modelMatrix", punaiseMm);
-	//punaiseShader->setUniformMatrix4("modelViewMatrix", punaiseMvm);
-	//punaiseShader->setUniformMatrix4("projectionMatrix", projectionMatrix);
-	//punaiseShader->setUniformVec3("light.position", pointLight.position);
-	//punaiseShader->setUniformVec3("light.intensities", pointLight.intensities);
-	//punaiseShader->setUniformFloat("light.attenuation", pointLight.attentuation);
-	//punaiseShader->setUniformFloat("light.ambientCoefficient", pointLight.ambientCoefficient);
-	//punaiseShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
-	//punaiseShader->setUniformFloat("materialShininess", 5.0f);
-	//punaiseShader->setUniformVec3("cameraPosition", extractCameraPosition(positionalDeviceCamera.getData()));
-	//punaise_model->draw(punaiseShader);
+	punaiseShader->use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, punaiseTexture->tid());
+	punaiseShader->setUniformInt("s_texture", 0);
+	punaiseShader->setUniformMatrix4("modelMatrix", punaiseMm);
+	punaiseShader->setUniformMatrix4("modelViewMatrix", punaiseMvm);
+	punaiseShader->setUniformMatrix4("projectionMatrix", projectionMatrix);
+	punaiseShader->setUniformVec3("light.position", pointLight.position);
+	punaiseShader->setUniformVec3("light.intensities", pointLight.intensities);
+	punaiseShader->setUniformFloat("light.attenuation", pointLight.attentuation);
+	punaiseShader->setUniformFloat("light.ambientCoefficient", pointLight.ambientCoefficient);
+	punaiseShader->setUniformVec3("materialSpecularColor", glm::vec3(1.0f, 1.0f, 1.0f));
+	punaiseShader->setUniformFloat("materialShininess", 5.0f);
+	punaiseShader->setUniformVec3("cameraPosition", extractCameraPosition(positionalDeviceCamera.getData()));
+	punaise_model->draw(punaiseShader);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	
 	// DRAW AIR
@@ -320,7 +431,7 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	if (leapListener.getHandMode() == LeapListener::HANDMODE_FINGER)
 	{
 		glBindTexture(GL_TEXTURE_2D, fbo.byteDataTexID);
-		GLint texSize = screenSize.x * screenSize.y * 3;
+		GLint texSize = screenSize.x * screenSize.y;
 		GLubyte* pixels = new GLubyte[texSize];
 		glPixelStorei(GL_PACK_ALIGNMENT, 1);
 		glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_UNSIGNED_BYTE, pixels);
@@ -341,6 +452,8 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		}
 		else
 			selected = false;
+
+		displayInformationCellPart(selectionIndex);
 	}
 }
 
@@ -368,11 +481,11 @@ void CellStrollApp::loadModels()
 	//ALL ELSE
 	hand_model = CaveLib::loadModel("data/CellStroll/models/hand.obj", new ModelLoadOptions(3.0f));
 	printf("Loaded hand\n");
-	air_model = CaveLib::loadModel("data/CellStroll/models/sphere2.obj", new ModelLoadOptions(100.0f));
+	air_model = CaveLib::loadModel("data/CellStroll/models/sphere2.obj", new ModelLoadOptions(1500.0f));
 	printf("Loaded surroundings\n");
 	pointer_model = CaveLib::loadModel("data/CellStroll/models/sphere.obj", new ModelLoadOptions(0.25f));
 	printf("Loaded pointer\n");
-	punaise_model = CaveLib::loadModel("data/CellStroll/models/punaise.obj", new ModelLoadOptions(250.0f));
+	punaise_model = CaveLib::loadModel("data/CellStroll/models/punaise.obj");
 	printf("Loaded punaise model\n");
 }
 

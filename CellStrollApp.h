@@ -19,6 +19,7 @@
 #include <CaveLib\Components\Label.h>
 #include <CaveLib\font.h>
 #include "ToolBox.h"
+#include "Jzon.h"
 #define MAX_CELL_ELEMENTS 13
 
 class cTexture;
@@ -85,4 +86,7 @@ class CellStrollApp : public Application
 		virtual void init();
 		virtual void preFrame(double, double);
 		virtual void draw(const glm::mat4 &, const glm::mat4 &);
+		void drawText(const char *text, int length, int x, int y, int z);
+		void fillInformationArray();
+		void displayInformationCellPart(int part);
 };
