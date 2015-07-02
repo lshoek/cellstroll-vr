@@ -65,8 +65,8 @@ class CellStrollApp : public Application
 		glm::vec3 center, cPlane;
 		Label partLabel = Label("Nothing selected!");
 		cFont* font = new cFont("Tahoma");
-		float cellScale = 5.0f;
-		int selectionIndex = 0;
+		float cellScale;
+		int selectionIndex;
 		bool selected = false;
 
 	public:
