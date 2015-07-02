@@ -97,11 +97,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CellStrollApp.cpp" />
+    <ClCompile Include="Jzon.cpp" />
     <ClCompile Include="LeapListener.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CellStrollApp.h" />
+    <ClInclude Include="Jzon.h" />
     <ClInclude Include="LeapData.h" />
     <ClInclude Include="LeapListener.h" />
     <ClInclude Include="ToolBox.h" />

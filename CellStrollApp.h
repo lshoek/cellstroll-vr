@@ -19,6 +19,7 @@
 #include <CaveLib\Components\Label.h>
 #include <CaveLib\font.h>
 #include "ToolBox.h"
+#include "Jzon.h"
 
 class cTexture;
 
@@ -65,6 +66,8 @@ class CellStrollApp : public Application
 		Label partLabel = Label("Nothing selected!");
 		cFont* font = new cFont("Tahoma");
 		float cellScale = 1.0f;
+		int tempCounterText = 0;
+		std::tuple<std::string,std::tuple<std::string, std::string>> cellParts;
 
 	public:
 		enum ViewConfig { OCULUS_VIEW, SIMULATION_VIEW };
@@ -75,6 +78,8 @@ class CellStrollApp : public Application
 		virtual void draw(const glm::mat4 &, const glm::mat4 &);
 		glm::vec3 extractCameraPosition(const glm::mat4 &);
 		void displayText(int x, int y, std::string string);
-		void drawBitmapText(std::string caption, int score, float r, float g, float b,float x, float y, float z);
 		void setPositionalDevice(ViewConfig);
+		void drawText(const char *text, int length, int x, int y, int z);
+		void fillInformationArray();
+		void displayInformationCellPart(int part);
 };

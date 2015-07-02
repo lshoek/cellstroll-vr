@@ -26,6 +26,8 @@ void CellStrollApp::init(void)
 	clippingPlane.point = glm::vec3(100.0f, 0.0f, 0.0f);
 	clippingPlane.normal = glm::vec3(0.0f, -1.0f, 0.0f);
 
+	fillInformationArray();
+
 	//TEXTURES
 	cellTexture = CaveLib::loadTexture("data/CellStroll/models/CoreTextureNew.png", new TextureLoadOptions(GL_FALSE));
 	sliceTexture = CaveLib::loadTexture("data/CellStroll/models/hand.png", new TextureLoadOptions(GL_FALSE));
@@ -136,6 +138,105 @@ void CellStrollApp::init(void)
 	partLabel.height = 0.5;
 	partLabel.width = 1;
 	partLabel.setFont(font);
+
+	// code to write the information in the json file
+	std::ifstream cellPartFile("data/CellStroll/Json/cellParts.json");
+	std::ostringstream tmp;
+	tmp << cellPartFile.rdbuf();
+	std::string s = tmp.str();
+	std::cout << s << std::endl;
+}
+
+void CellStrollApp::displayInformationCellPart(int part)
+{
+	switch (part)
+	{
+	case 0:
+		drawText("Centriole / Centriolen", 22, 1000, 600, 0);
+		break;
+	case 1:
+		drawText("Nucleolos / Kernlichaam", 23, 1000, 600, 0);
+		break;
+	case 2:
+		drawText("Flagellum / Flagellum", 21, 1000, 600, 0);
+		break;
+	case 3:
+		drawText("Golgi / Golgi-apparaat", 22, 1000, 600, 0);
+		break;
+	case 4:
+		drawText("Cytoplasm / Cytoplasma", 22, 1000, 600, 0);
+		break;
+	case 5:
+		drawText("Lysosome / Lysosoom", 19, 1000, 600, 0);
+		break;
+	case 6:
+		drawText("Nucleus / Celkern", 17, 1000, 600, 0);
+		break;
+	case 7:
+		drawText("Mitochondrion / Mitochondriën", 29, 1000, 600, 0);
+		break;
+	case 8:
+		drawText("Nuclear Membrane / Nuclear Membraan", 35, 1000, 600, 0);
+		break;
+	case 9:
+		drawText("Cell Membrane / Cel Membraan", 28, 1000, 600, 0);
+		break;
+	case 10:
+		drawText("Peroxisome / Peroxisoom", 23, 1000, 600, 0);
+		break;
+	case 11:
+		drawText("Reticulum / Endoplasmatisch Reticulum", 37, 1000, 600, 0);
+		break;
+	case 12:
+		drawText("Filament / Filament", 19, 1000, 600, 0);
+		break;
+	default:
+		break;
+	}
+}
+
+void CellStrollApp::fillInformationArray()
+{
+	int bracketCounter = 0;
+	int accoladeCounter = 0;
+	char *tempName, *tempDescription, *tempNl;
+	Jzon::Object rootNode;
+	Jzon::FileReader::ReadFile("data/CellStroll/Json/cellParts.json", rootNode);
+	
+	for (Jzon::Object::iterator it = rootNode.begin(); it != rootNode.end(); ++it)
+	{
+		std::string name = (*it).first;
+		Jzon::Node &node = (*it).second;
+
+		std::cout << name << " = ";
+		if (node.IsValue())
+		{
+			if (name == "name")
+			{
+				for each (char c in node.ToString())
+				{
+					tempName += c;
+				}
+			}
+			else if (name == "description")
+			{
+				for each (char c in node.ToString())
+				{
+					tempDescription += c;
+				}
+			}
+			else if (name == "nl_name")
+			{
+				for each (char c in node.ToString())
+				{
+					tempNl += c;
+				}
+			}
+
+			std::cout << node.ToString();
+		}
+		std::cout << std::endl;
+	}
 }
 
 void CellStrollApp::preFrame(double, double totalTime)
@@ -145,7 +246,7 @@ void CellStrollApp::preFrame(double, double totalTime)
 	leapListener.setTimeDiff(timeFctr);
 }
 
-// SHOWING TEXT ON THE SCREEN
+// Draw text in the 3 dimensional space
 void CellStrollApp::displayText(int x, int y, std::string string)
 {
 	glTranslatef(2, 0, 0);
@@ -158,16 +259,28 @@ void CellStrollApp::displayText(int x, int y, std::string string)
 	partLabel.render(2.0f);
 }
 
-void CellStrollApp::drawBitmapText(std::string caption, int score, float r, float g, float b,float x, float y, float z) 
-{
-	glColor3f(r, g, b);
-	glRasterPos3f(x, y, z);
-	std::stringstream strm;
-	strm << caption << score;
-	std::string text = strm.str();
-	for (std::string::iterator it = text.begin(); it != text.end(); ++it) {
-		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, *it);
+// Draw text on the screen of the application
+void CellStrollApp::drawText(const char *text, int length, int x, int y, int z) {
+	glPushMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0, 1280, 0, 720, -5, 5);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glPushMatrix();
+	glLoadIdentity();
+	glRasterPos3i(x, y, z);
+	for (int i = 0; i < length; i++) {
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, (int)text[i]);
+		//glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN, (int)text[i]);
 	}
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
 }
 
 void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &modelViewMatrix)
@@ -216,8 +329,14 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		collision = sphereCollision(leapData.getPointer(), center, 4.0f);
 		handTexture = fingerTexture;
 
-		std::string bleh = "Mooie tekst";
-		displayText(1, 0, bleh);
+		// Display information about the cell part on screen
+		char temp[] = { "Mooie tekst!\n Ja toch?" };
+		int tempCounter = 0;
+		for each (char c in temp)
+		{
+			tempCounter++;
+		}
+		drawText(temp, tempCounter, 1000, 600, 0);
 	}
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_FIST)
 	{
@@ -376,9 +495,9 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * 4, &verts[0]);
 	glDrawArrays(GL_QUADS, 0, verts.size());
 
-	//glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo.fboID);
-	//glReadBuffer(GL_COLOR_ATTACHMENT0);
-	//glBlitFramebuffer(0, 0, screenSize.x, screenSize.y, 0, 0, screenSize.x, screenSize.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo.fboID);
+	glReadBuffer(GL_COLOR_ATTACHMENT0);
+	glBlitFramebuffer(0, 0, screenSize.x, screenSize.y, 0, 0, screenSize.x, screenSize.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
