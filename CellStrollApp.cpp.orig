@@ -447,13 +447,19 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		if (j < texSize)
 		{
 			int value = pixels[j];
-			selectionIndex = value-1;
+			selectionIndex = value;
 			selected = true;
 		}
 		else
 			selected = false;
+<<<<<<< HEAD
+=======
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		displayInformationCellPart(selectionIndex);
+>>>>>>> ad63f45e1b736507db46bbd223d8ed290eb8df97
 	}
 }
 
