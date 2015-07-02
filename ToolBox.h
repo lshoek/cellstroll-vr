@@ -50,13 +50,11 @@ inline GLuint createShaderProgram(std::string vertexShader, std::string fragment
 	return shaderProgram;
 }
 
-inline bool sphereCollision(glm::vec3 pointer, glm::vec3 sphereCenter, GLfloat sphereRadius)
+inline glm::vec3 extractCameraPosition(const glm::mat4 &modelView)
 {
-	glm::vec3 diff = pointer - sphereCenter;
-	GLfloat distance = glm::sqrt(diff.x * diff.x + diff.y * diff.y + diff.z*diff.z);
-	if (distance < sphereRadius)
-		return true;
-	return false;
+	glm::mat3 rotMat = glm::mat3(modelView);
+	glm::vec3 d(modelView[3]);
+	return -d * rotMat;
 }
 
 static void fb_status(const char *where)

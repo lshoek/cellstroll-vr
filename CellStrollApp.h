@@ -20,6 +20,7 @@
 #include <CaveLib\font.h>
 #include "ToolBox.h"
 #include "Jzon.h"
+#define MAX_CELL_ELEMENTS 13
 
 class cTexture;
 
@@ -45,18 +46,17 @@ class CellStrollApp : public Application
 			GLuint texID;
 			GLuint byteDataTexID;
 		};
+		std::string* elementNames = new std::string[MAX_CELL_ELEMENTS];
+		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture,
+			*fistTexture, *normalmap_a, *punaiseTexture;
+		cModel	*hand_model, *cell_model, *air_model, *pointer_model, *punaise_model;
+		cModel *cellElements[MAX_CELL_ELEMENTS];
 		LeapData leapData;
 		LeapListener leapListener;
 		Leap::Controller controller;
 		PositionalDevice positionalDeviceCamera;
-		ShaderProgram *handShader, *pointerShader, *cellShader, *airShader, *fboShader, *punaiseShader;
 		GLuint lineShader;
-		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture, *fistTexture, *normalmap_a, *punaiseTexture;
-		cModel *hand_model, *cell_model, *air_model, *pointer_model,*punaise_model;
-		// AnimalCell models
-		cModel *centriole_model, *nucleolos_model, *flagellum_model, *golgi_model, *cytoplasm_model, *lysosome_model, *nucleus_model, *mitochondrion_model,
-			*nuclearMembrane_model, *cellMembrane_model, *peroxisome_model, *reticulum_model, *filament_model;
-
+		ShaderProgram *handShader, *pointerShader, *cellShader, *airShader, *fboShader, *punaiseShader;
 		Light pointLight;
 		Plane clippingPlane;
 		FrameBufferObject fbo;
@@ -65,18 +65,23 @@ class CellStrollApp : public Application
 		glm::vec3 center, cPlane;
 		Label partLabel = Label("Nothing selected!");
 		cFont* font = new cFont("Tahoma");
-		float cellScale = 1.0f;
-		int tempCounterText = 0;
-		std::tuple<std::string,std::tuple<std::string, std::string>> cellParts;
+		float cellScale = 5.0f;
+		int selectionIndex = 0;
+		bool selected = false;
 
 	public:
 		enum ViewConfig { OCULUS_VIEW, SIMULATION_VIEW };
 		CellStrollApp(void);
 		~CellStrollApp(void);
+
 		virtual void init();
 		virtual void preFrame(double, double);
 		virtual void draw(const glm::mat4 &, const glm::mat4 &);
-		glm::vec3 extractCameraPosition(const glm::mat4 &);
+
+		void loadTextures();
+		void loadModels();
+		void loadShaders();
+
 		void displayText(int x, int y, std::string string);
 		void setPositionalDevice(ViewConfig);
 		void drawText(const char *text, int length, int x, int y, int z);
