@@ -64,24 +64,25 @@ class CellStrollApp : public Application
 		glm::vec3 center, cPlane;
 		Label partLabel = Label("Nothing selected!");
 		cFont* font = new cFont("Tahoma");
+		enum ViewConfig { OCULUS_VIEW, SIMULATION_VIEW };
+		ViewConfig viewConfig;
 		float cellScale = 5.0f;
 		int selectionIndex = 0;
 		bool selected = false;
-
-	public:
-		enum ViewConfig { OCULUS_VIEW, SIMULATION_VIEW };
-		CellStrollApp(void);
-		~CellStrollApp(void);
-
-		virtual void init();
-		virtual void preFrame(double, double);
-		virtual void draw(const glm::mat4 &, const glm::mat4 &);
 
 		void loadTextures();
 		void loadModels();
 		void loadShaders();
 
 		void displayText(int x, int y, std::string string);
-		void drawBitmapText(std::string caption, int score, float r, float g, float b,float x, float y, float z);
+		void drawBitmapText(std::string caption, int score, float r, float g, float b, float x, float y, float z);
 		void setPositionalDevice(ViewConfig);
+
+	public:
+		CellStrollApp(void);
+		~CellStrollApp(void);
+
+		virtual void init();
+		virtual void preFrame(double, double);
+		virtual void draw(const glm::mat4 &, const glm::mat4 &);
 };

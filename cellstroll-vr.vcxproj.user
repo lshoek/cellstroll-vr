@@ -5,4 +5,9 @@
     <LocalDebuggerWorkingDirectory>..\..\..\Runtime</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommandArguments>--config configs\oculus.json</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerWorkingDirectory>..\..\..\Runtime</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
 </Project>
