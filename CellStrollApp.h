@@ -19,6 +19,7 @@
 #include <CaveLib\Components\Label.h>
 #include <CaveLib\font.h>
 #include "ToolBox.h"
+#define MAX_CELL_ELEMENTS 13
 
 class cTexture;
 
@@ -44,19 +45,17 @@ class CellStrollApp : public Application
 			GLuint texID;
 			GLuint byteDataTexID;
 		};
+		std::string* elementNames = new std::string[MAX_CELL_ELEMENTS];
 		cTexture *cellTexture, *handTexture, *sliceTexture, *fingerTexture,
 			*fistTexture, *normalmap_a, *punaiseTexture;
 		cModel	*hand_model, *cell_model, *air_model, *pointer_model, *punaise_model;
-		cModel	*centriole_model, *nucleolos_model, *flagellum_model, *golgi_model,
-			*cytoplasm_model, *lysosome_model, *nucleus_model, *mitochondrion_model,
-			*nuclearMembrane_model, *cellMembrane_model, *peroxisome_model, 
-			*reticulum_model, *filament_model;
+		cModel *cellElements[MAX_CELL_ELEMENTS];
 		LeapData leapData;
 		LeapListener leapListener;
 		Leap::Controller controller;
 		PositionalDevice positionalDeviceCamera;
 		GLuint lineShader;
-		ShaderProgram *handShader, *pointerShader, *cellShader, *airShader, *fboShader, *punaiseShader, *defaultfbShader;
+		ShaderProgram *handShader, *pointerShader, *cellShader, *airShader, *fboShader, *punaiseShader;
 		Light pointLight;
 		Plane clippingPlane;
 		FrameBufferObject fbo;
@@ -65,7 +64,9 @@ class CellStrollApp : public Application
 		glm::vec3 center, cPlane;
 		Label partLabel = Label("Nothing selected!");
 		cFont* font = new cFont("Tahoma");
-		float cellScale = 1.0f;
+		float cellScale = 5.0f;
+		int selectionIndex = 0;
+		bool selected = false;
 
 	public:
 		enum ViewConfig { OCULUS_VIEW, SIMULATION_VIEW };
