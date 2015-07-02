@@ -65,10 +65,10 @@ class CellStrollApp : public Application
 		glm::vec3 center, cPlane;
 		Label partLabel = Label("Nothing selected!");
 		cFont* font = new cFont("Tahoma");
+		float cellScale;
+		int selectionIndex;
 		enum ViewConfig { OCULUS_VIEW, SIMULATION_VIEW };
 		ViewConfig viewConfig;
-		float cellScale = 5.0f;
-		int selectionIndex = 0;
 		bool selected = false;
 
 		void loadTextures();

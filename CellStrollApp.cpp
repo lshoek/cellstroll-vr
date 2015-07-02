@@ -84,6 +84,8 @@ void CellStrollApp::init(void)
 	tmp << cellPartFile.rdbuf();
 	std::string s = tmp.str();
 	std::cout << s << std::endl;
+
+	cellScale = 4.0f;
 }
 
 void CellStrollApp::displayInformationCellPart(int part)
