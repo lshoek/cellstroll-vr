@@ -8,7 +8,7 @@ CellStrollApp::~CellStrollApp(void){}
 void CellStrollApp::init(void)
 {
 	//CONFIGS
-	setPositionalDevice(CellStrollApp::OCULUS_VIEW);
+	setPositionalDevice(SIMULATION_VIEW);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
@@ -73,7 +73,6 @@ void CellStrollApp::init(void)
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo.rboID);
 
 	fb_status("x");
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	partLabel.height = 0.5;
 	partLabel.width = 1;
@@ -292,6 +291,10 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	punaiseMm = glm::scale(punaiseMm, glm::vec3(cellScale));
 	glm::mat4 punaiseMvm = modelViewMatrix * punaiseMm;
 
+	GLint oldFbo;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &oldFbo);
+
+	// DRAWBUFFERS
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo.fboID);
 	GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, buffers);
@@ -395,11 +398,14 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		glDisableVertexAttribArray(0);
 		*/
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//FBO
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
+
+	GLint viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 
 	std::vector<glm::vec2> verts;
 	verts.push_back(glm::vec2(-1, -1));
@@ -407,13 +413,12 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	verts.push_back(glm::vec2(1, 1));
 	verts.push_back(glm::vec2(-1, 1));
 
-	// DRAW TO SCREEN (DEFAULT FRAME BUFFER)
+	// DRAW TO DEFAULT FRAME BUFFER
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	fboShader->use();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, fbo.texID);
 	fboShader->setUniformInt("screenTexture", 0);
-	fboShader->setUniformVec2("screenSize", screenSize);
 	glBindVertexArray(0);
 	glEnableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
@@ -421,8 +426,6 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * 4, &verts[0]);
 	glDrawArrays(GL_QUADS, 0, verts.size());
 
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDisableVertexAttribArray(0);
 	glUseProgram(0);
 
@@ -451,9 +454,6 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		}
 		else
 			selected = false;
-
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		displayInformationCellPart(selectionIndex);
 	}
@@ -511,6 +511,7 @@ void CellStrollApp::loadShaders()
 
 void CellStrollApp::setPositionalDevice(ViewConfig config)
 {
+	viewConfig = config;
 	if (config == OCULUS_VIEW)
 		positionalDeviceCamera.init("MainUserHead");
 	else

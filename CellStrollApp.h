@@ -67,23 +67,25 @@ class CellStrollApp : public Application
 		cFont* font = new cFont("Tahoma");
 		float cellScale;
 		int selectionIndex;
-		bool selected = false;
-
-	public:
 		enum ViewConfig { OCULUS_VIEW, SIMULATION_VIEW };
-		CellStrollApp(void);
-		~CellStrollApp(void);
-
-		virtual void init();
-		virtual void preFrame(double, double);
-		virtual void draw(const glm::mat4 &, const glm::mat4 &);
+		ViewConfig viewConfig;
+		bool selected = false;
 
 		void loadTextures();
 		void loadModels();
 		void loadShaders();
 
 		void displayText(int x, int y, std::string string);
+		void drawBitmapText(std::string caption, int score, float r, float g, float b, float x, float y, float z);
 		void setPositionalDevice(ViewConfig);
+
+	public:
+		CellStrollApp(void);
+		~CellStrollApp(void);
+
+		virtual void init();
+		virtual void preFrame(double, double);
+		virtual void draw(const glm::mat4 &, const glm::mat4 &);
 		void drawText(const char *text, int length, int x, int y, int z);
 		void fillInformationArray();
 		void displayInformationCellPart(int part);
