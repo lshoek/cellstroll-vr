@@ -84,8 +84,6 @@ void CellStrollApp::init(void)
 	tmp << cellPartFile.rdbuf();
 	std::string s = tmp.str();
 	std::cout << s << std::endl;
-
-	cellScale = 4.0f;
 }
 
 void CellStrollApp::displayInformationCellPart(int part)
@@ -240,7 +238,7 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	glm::mat4 pointerMvp = glm::translate(mvp, LeapData::rescale(leapData.palmPosition));
 	glm::mat4 pointerDirectionMvp;
 	glm::mat4 cellMm = glm::translate(glm::mat4(), center);
-	glm::mat4 punaiseMm = glm::translate(glm::mat4(), glm::vec3(-500, 0, 0));
+	glm::mat4 punaiseMm = glm::translate(glm::mat4(), glm::vec3(-250, 0, 0));
 
 	// GESTURES
 	glm::mat4 rotMatNormal = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
@@ -449,13 +447,19 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		if (j < texSize)
 		{
 			int value = pixels[j];
-			selectionIndex = value-1;
+			selectionIndex = value;
 			selected = true;
 		}
 		else
 			selected = false;
+<<<<<<< HEAD
+=======
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		displayInformationCellPart(selectionIndex);
+>>>>>>> ad63f45e1b736507db46bbd223d8ed290eb8df97
 	}
 }
 
