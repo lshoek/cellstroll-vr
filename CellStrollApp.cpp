@@ -8,7 +8,7 @@ CellStrollApp::~CellStrollApp(void){}
 void CellStrollApp::init(void)
 {
 	//CONFIGS
-	setPositionalDevice(SIMULATION_VIEW);
+	setPositionalDevice(OCULUS_VIEW);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
@@ -244,8 +244,7 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 
 	// GESTURES
 	glm::mat4 rotMatNormal = glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), leapData.palmNormal);
-	glm::mat4 rotMatDir = glm::orientation(glm::vec3(0.0f, 0.0f, -1.0f), leapData.direction);
-	pointerMvp *= glm::inverse(rotMatDir * rotMatNormal);
+	pointerMvp *= glm::inverse(rotMatNormal);
 
 	if (leapListener.getHandMode() == LeapListener::HANDMODE_SLICE)
 	{
@@ -256,6 +255,8 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 	}
 	else if (leapListener.getHandMode() == LeapListener::HANDMODE_FINGER)
 	{
+		glm::mat4 rotMatDir = glm::orientation(glm::vec3(0.0f, 0.0f, -1.0f), leapData.direction);
+		pointerMvp *= glm::inverse(rotMatDir);
 		cellMm *= glm::orientation(glm::vec3(0.0f, -1.0f, 0.0f), glm::normalize(leapData.tempPalmPosition));
 
 		// DRAW POINTER LINE
@@ -372,7 +373,6 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 		pointerShader->setUniformMatrix4("modelViewProjectionMatrix", pointerDirectionMvp);
 		pointer_model->draw(pointerShader);
 
-		/*
 		// DRAWING LINE BETWEEN HAND AND POINTER
 		glUseProgram(lineShader);
 		GLuint vertexArray, vertexBuffer;
@@ -388,15 +388,15 @@ void CellStrollApp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &mod
 
 		// DRAW
 		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		glUniformMatrix4fv(glGetUniformLocation(lineShader, "modelViewProjectionMatrix"), 1, 0, glm::value_ptr(mvp));
 
 		glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
 		glLineWidth(3.0f);
 		glDrawArrays(GL_LINES, 0, 2);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glDisableVertexAttribArray(0);
-		*/
+		
 	}
 
 	//FBO
@@ -514,6 +514,6 @@ void CellStrollApp::setPositionalDevice(ViewConfig config)
 	viewConfig = config;
 	if (config == OCULUS_VIEW)
 		positionalDeviceCamera.init("MainUserHead");
-	else
+	else if (config == SIMULATION_VIEW)
 		positionalDeviceCamera.init("CameraPosition");
 }
